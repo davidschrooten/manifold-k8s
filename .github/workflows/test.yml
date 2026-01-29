@@ -63,3 +63,7 @@ jobs:
       uses: golangci/golangci-lint-action@v4
       with:
         version: latest
+        skip-pkg-cache: true
+        skip-build-cache: true
+      env:
+        GOFLAGS: -buildvcs=false
