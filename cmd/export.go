@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/tools/clientcmd/api"
 )
 
 var (
@@ -54,27 +55,43 @@ func init() {
 func runExport(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 	// Validate required flags
-	if !exportAllRes && len(exportResources) == 0 {
-		return fmt.Errorf("either --resources or --all-resources is required")
+	if err := validateExportFlags(exportAllRes, exportResources); err != nil {
+		return err
 	}
 
-	// Load kubeconfig
+	// Load kubeconfig (use stub if available)
 	kubeconfigPath := viper.GetString("kubeconfig")
-	config, err := k8s.LoadKubeConfig(kubeconfigPath)
+	var err error
+	var config *api.Config
+	if stubLoadKubeConfig != nil {
+		config, err = stubLoadKubeConfig(kubeconfigPath)
+	} else {
+		config, err = k8s.LoadKubeConfig(kubeconfigPath)
+	}
 	if err != nil {
 		return fmt.Errorf("failed to load kubeconfig: %w", err)
 	}
 
-	// Create client for specified context
-	client, err := k8s.NewClient(config, exportCtx)
+	// Create client for specified context (use stub if available)
+	var client *k8s.Client
+	if stubNewClient != nil {
+		client, err = stubNewClient(config, exportCtx)
+	} else {
+		client, err = k8s.NewClient(config, exportCtx)
+	}
 	if err != nil {
 		return fmt.Errorf("failed to create client for context %s: %w", exportCtx, err)
 	}
 
 	fmt.Printf("Using context: %s\n", exportCtx)
 
-	// Discover resources
-	discoveredResources, err := k8s.DiscoverResources(client.Clientset.Discovery())
+	// Discover resources (use stub if available)
+	var discoveredResources []k8s.ResourceInfo
+	if stubDiscoverResources != nil {
+		discoveredResources, err = stubDiscoverResources(client.Clientset.Discovery())
+	} else {
+		discoveredResources, err = k8s.DiscoverResources(client.Clientset.Discovery())
+	}
 	if err != nil {
 		return fmt.Errorf("failed to discover resources: %w", err)
 	}
@@ -85,19 +102,14 @@ func runExport(cmd *cobra.Command, args []string) error {
 		selectedResources = discoveredResources
 		fmt.Printf("Exporting all resource types (%d types)\n", len(selectedResources))
 	} else {
-		// Build map of resource names
-		resourceMap := make(map[string]k8s.ResourceInfo)
-		for _, res := range discoveredResources {
-			resourceMap[res.Name] = res
-		}
-
-		// Select requested resources
-		for _, resName := range exportResources {
-			if res, found := resourceMap[resName]; found {
-				selectedResources = append(selectedResources, res)
-			} else {
-				fmt.Fprintf(os.Stderr, "Warning: resource type %s not found in cluster\n", resName)
-			}
+		// Build map and select requested resources
+		resourceMap := buildResourceMap(discoveredResources)
+		var notFound []string
+		selectedResources, notFound = selectRequestedResources(resourceMap, exportResources)
+		
+		// Warn about not found resources
+		for _, resName := range notFound {
+			fmt.Fprintf(os.Stderr, "Warning: resource type %s not found in cluster\n", resName)
 		}
 
 		if len(selectedResources) == 0 {
@@ -115,8 +127,8 @@ func runExport(cmd *cobra.Command, args []string) error {
 	fmt.Println("\nExporting manifests...")
 	for _, namespace := range exportNamespaces {
 		for _, resource := range selectedResources {
-			if !resource.Namespaced && namespace != "" {
-				continue // Skip cluster-scoped resources when processing namespaces
+			if !shouldProcessResource(resource, namespace) {
+				continue
 			}
 
 			gvr := resource.GroupVersionResource()
@@ -137,7 +149,7 @@ func runExport(cmd *cobra.Command, args []string) error {
 			// Export each resource
 			for _, item := range resourceList.Items {
 				if exportDryRun {
-					fmt.Printf("[DRY-RUN] Would export: %s/%s/%s\n", namespace, resource.Name, item.GetName())
+					fmt.Println(formatOutputMessage(true, namespace, resource.Name, item.GetName()))
 					continue
 				}
 
@@ -145,7 +157,7 @@ func runExport(cmd *cobra.Command, args []string) error {
 					fmt.Fprintf(os.Stderr, "Warning: failed to export %s/%s: %v\n", resource.Name, item.GetName(), err)
 					continue
 				}
-				fmt.Printf("Exported: %s/%s/%s\n", namespace, resource.Name, item.GetName())
+				fmt.Println(formatOutputMessage(false, namespace, resource.Name, item.GetName()))
 			}
 		}
 	}

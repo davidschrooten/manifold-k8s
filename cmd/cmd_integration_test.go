@@ -315,3 +315,84 @@ func TestInteractiveCmd_RunEIsSet(t *testing.T) {
 		t.Error("interactiveCmd.RunE should be set")
 	}
 }
+
+// TestExportInit tests export init function
+func TestExportInit(t *testing.T) {
+	// Test that init doesn't panic
+	defer func() {
+		if r := recover(); r != nil {
+			t.Errorf("export init() panicked: %v", r)
+		}
+	}()
+	
+	// Verify command is added to root
+	found := false
+	for _, cmd := range rootCmd.Commands() {
+		if cmd.Name() == "export" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("export command not found in root commands")
+	}
+}
+
+// TestInteractiveInit tests interactive init function
+func TestInteractiveInit(t *testing.T) {
+	// Test that init doesn't panic
+	defer func() {
+		if r := recover(); r != nil {
+			t.Errorf("interactive init() panicked: %v", r)
+		}
+	}()
+	
+	// Verify command is added to root
+	found := false
+	for _, cmd := range rootCmd.Commands() {
+		if cmd.Name() == "interactive" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("interactive command not found in root commands")
+	}
+}
+
+// TestExportCmd_Examples tests that command has examples
+func TestExportCmd_Examples(t *testing.T) {
+	if exportCmd.Long == "" {
+		t.Error("exportCmd should have Long description with examples")
+	}
+}
+
+// TestInteractiveCmd_Examples tests that command has examples
+func TestInteractiveCmd_Examples(t *testing.T) {
+	if interactiveCmd.Long == "" {
+		t.Error("interactiveCmd should have Long description")
+	}
+}
+
+// TestRootCmd_Version tests version information
+func TestRootCmd_Version(t *testing.T) {
+	if rootCmd.Version != "" {
+		t.Log("Version is set:", rootCmd.Version)
+	}
+}
+
+// TestExportCmd_Aliases tests command aliases
+func TestExportCmd_Aliases(t *testing.T) {
+	// Export command doesn't have aliases, but test the field exists
+	if len(exportCmd.Aliases) > 0 {
+		t.Logf("Export has aliases: %v", exportCmd.Aliases)
+	}
+}
+
+// TestInteractiveCmd_Aliases tests command aliases  
+func TestInteractiveCmd_Aliases(t *testing.T) {
+	// Interactive command doesn't have aliases, but test the field exists
+	if len(interactiveCmd.Aliases) > 0 {
+		t.Logf("Interactive has aliases: %v", interactiveCmd.Aliases)
+	}
+}

@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/tools/clientcmd/api"
 )
 
 var (
@@ -42,9 +43,15 @@ func init() {
 func runInteractive(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
-	// Load kubeconfig
+	// Load kubeconfig (use stub if available)
 	kubeconfigPath := viper.GetString("kubeconfig")
-	config, err := k8s.LoadKubeConfig(kubeconfigPath)
+	var err error
+	var config *api.Config
+	if stubLoadKubeConfig != nil {
+		config, err = stubLoadKubeConfig(kubeconfigPath)
+	} else {
+		config, err = k8s.LoadKubeConfig(kubeconfigPath)
+	}
 	if err != nil {
 		return fmt.Errorf("failed to load kubeconfig: %w", err)
 	}
@@ -63,14 +70,24 @@ func runInteractive(cmd *cobra.Command, args []string) error {
 	for _, contextName := range selectedContexts {
 		fmt.Printf("\n=== Processing context: %s ===\n", contextName)
 
-		// Create client for this context
-		client, err := k8s.NewClient(config, contextName)
+		// Create client for this context (use stub if available)
+		var client *k8s.Client
+		if stubNewClient != nil {
+			client, err = stubNewClient(config, contextName)
+		} else {
+			client, err = k8s.NewClient(config, contextName)
+		}
 		if err != nil {
 			return fmt.Errorf("failed to create client for context %s: %w", contextName, err)
 		}
 
-		// Get namespaces
-		namespaces, err := k8s.GetNamespaces(ctx, client)
+		// Get namespaces (use stub if available)
+		var namespaces []string
+		if stubGetNamespaces != nil {
+			namespaces, err = stubGetNamespaces(ctx, client)
+		} else {
+			namespaces, err = k8s.GetNamespaces(ctx, client)
+		}
 		if err != nil {
 			return fmt.Errorf("failed to list namespaces: %w", err)
 		}
@@ -82,9 +99,14 @@ func runInteractive(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("namespace selection failed: %w", err)
 		}
 
-		// Discover resources
+		// Discover resources (use stub if available)
 		fmt.Println("\nDiscovering available resources...")
-		resources, err := k8s.DiscoverResources(client.Clientset.Discovery())
+		var resources []k8s.ResourceInfo
+		if stubDiscoverResources != nil {
+			resources, err = stubDiscoverResources(client.Clientset.Discovery())
+		} else {
+			resources, err = k8s.DiscoverResources(client.Clientset.Discovery())
+		}
 		if err != nil {
 			return fmt.Errorf("failed to discover resources: %w", err)
 		}
@@ -113,8 +135,8 @@ func runInteractive(cmd *cobra.Command, args []string) error {
 		fmt.Println("\nExporting manifests...")
 		for _, namespace := range selectedNamespaces {
 			for _, resource := range selectedResources {
-				if !resource.Namespaced && namespace != "" {
-					continue // Skip cluster-scoped resources when processing namespaces
+				if !shouldProcessResource(resource, namespace) {
+					continue
 				}
 
 				gvr := resource.GroupVersionResource()
@@ -135,7 +157,7 @@ func runInteractive(cmd *cobra.Command, args []string) error {
 				// Export each resource
 				for _, item := range resourceList.Items {
 					if interactiveDryRun {
-						fmt.Printf("[DRY-RUN] Would export: %s/%s/%s\n", namespace, resource.Name, item.GetName())
+						fmt.Println(formatOutputMessage(true, namespace, resource.Name, item.GetName()))
 						continue
 					}
 
@@ -143,7 +165,7 @@ func runInteractive(cmd *cobra.Command, args []string) error {
 						fmt.Fprintf(os.Stderr, "Warning: failed to export %s/%s: %v\n", resource.Name, item.GetName(), err)
 						continue
 					}
-					fmt.Printf("Exported: %s/%s/%s\n", namespace, resource.Name, item.GetName())
+					fmt.Println(formatOutputMessage(false, namespace, resource.Name, item.GetName()))
 				}
 			}
 		}
