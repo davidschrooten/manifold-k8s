@@ -167,6 +167,11 @@ func TestValidateDirectory(t *testing.T) {
 			input:   "./output",
 			wantErr: false,
 		},
+		{
+			name:    "whitespace only",
+			input:   "   ",
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -185,4 +190,28 @@ func TestValidateDirectory(t *testing.T) {
 			t.Error("ValidateDirectory() expected error for invalid type, got nil")
 		}
 	})
+}
+
+func TestPromptContextSelection_EmptyContexts(t *testing.T) {
+	// Test error case with no contexts
+	_, err := PromptContextSelection([]string{}, "")
+	if err == nil {
+		t.Error("PromptContextSelection() with empty contexts should return error")
+	}
+}
+
+func TestPromptNamespaceSelection_EmptyNamespaces(t *testing.T) {
+	// Test error case with no namespaces
+	_, err := PromptNamespaceSelection([]string{})
+	if err == nil {
+		t.Error("PromptNamespaceSelection() with empty namespaces should return error")
+	}
+}
+
+func TestPromptResourceSelection_EmptyResources(t *testing.T) {
+	// Test error case with no resources
+	_, err := PromptResourceSelection([]k8s.ResourceInfo{})
+	if err == nil {
+		t.Error("PromptResourceSelection() with empty resources should return error")
+	}
 }
