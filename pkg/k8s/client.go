@@ -14,10 +14,10 @@ import (
 
 // Client wraps Kubernetes clients
 type Client struct {
-	Clientset      kubernetes.Interface
-	DynamicClient  dynamic.Interface
-	RESTConfig     *rest.Config
-	Context        string
+	Clientset     kubernetes.Interface
+	DynamicClient dynamic.Interface
+	RESTConfig    *rest.Config
+	Context       string
 }
 
 // LoadKubeConfig loads kubeconfig from the specified path

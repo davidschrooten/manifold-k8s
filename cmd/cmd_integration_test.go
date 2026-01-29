@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"testing"
-	
+
 	"github.com/spf13/cobra"
 )
 
@@ -10,14 +10,14 @@ import (
 func TestRootCmd_SubCommands(t *testing.T) {
 	// Test that root command has expected subcommands
 	expectedCommands := []string{"export", "interactive"}
-	
+
 	commands := rootCmd.Commands()
 	found := make(map[string]bool)
-	
+
 	for _, cmd := range commands {
 		found[cmd.Name()] = true
 	}
-	
+
 	for _, expected := range expectedCommands {
 		if !found[expected] {
 			t.Errorf("Expected subcommand %s not found", expected)
@@ -32,7 +32,7 @@ func TestRootCmd_GlobalFlags(t *testing.T) {
 	if kubeconfigFlag == nil {
 		t.Error("kubeconfig flag not found")
 	}
-	
+
 	// Test config flag
 	configFlag := rootCmd.PersistentFlags().Lookup("config")
 	if configFlag == nil {
@@ -58,13 +58,13 @@ func TestInteractiveCmd_OutputFlag(t *testing.T) {
 	if flag == nil {
 		t.Fatal("output flag not found")
 	}
-	
+
 	// Test setting the flag
 	err := flag.Value.Set("/tmp/test")
 	if err != nil {
 		t.Errorf("Failed to set output flag: %v", err)
 	}
-	
+
 	if flag.Value.String() != "/tmp/test" {
 		t.Errorf("output flag value = %s, want /tmp/test", flag.Value.String())
 	}
@@ -83,7 +83,7 @@ func TestExportCmd_ShorthandFlags(t *testing.T) {
 		{"resources shorthand", "resources", "r"},
 		{"all-resources shorthand", "all-resources", "a"},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			flag := exportCmd.Flags().Lookup(tt.flagName)
@@ -103,7 +103,7 @@ func TestInteractiveCmd_DryRunFlag(t *testing.T) {
 	if flag == nil {
 		t.Fatal("dry-run flag not found")
 	}
-	
+
 	// Test default value
 	if flag.DefValue != "false" {
 		t.Errorf("dry-run default = %s, want false", flag.DefValue)
@@ -113,16 +113,16 @@ func TestInteractiveCmd_DryRunFlag(t *testing.T) {
 // TestExportCmd_FlagDefaults tests default values
 func TestExportCmd_FlagDefaults(t *testing.T) {
 	tests := []struct {
-		name         string
-		flagName     string
-		wantDefault  string
+		name        string
+		flagName    string
+		wantDefault string
 	}{
 		{"dry-run default", "dry-run", "false"},
 		{"all-resources default", "all-resources", "false"},
 		{"output default", "output", ""},
 		{"context default", "context", ""},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			flag := exportCmd.Flags().Lookup(tt.flagName)
@@ -139,17 +139,17 @@ func TestExportCmd_FlagDefaults(t *testing.T) {
 // TestCommandDescriptions tests that commands have proper descriptions
 func TestCommandDescriptions(t *testing.T) {
 	tests := []struct {
-		cmd         *cobra.Command
-		name        string
-		wantUse     string
-		wantShort   bool
-		wantLong    bool
+		cmd       *cobra.Command
+		name      string
+		wantUse   string
+		wantShort bool
+		wantLong  bool
 	}{
 		{rootCmd, "root", "manifold-k8s", true, true},
 		{exportCmd, "export", "export", true, true},
 		{interactiveCmd, "interactive", "interactive", true, true},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.cmd.Use != tt.wantUse {
@@ -172,19 +172,19 @@ func TestExportCmd_StringSliceFlags(t *testing.T) {
 	if namespacesFlag == nil {
 		t.Fatal("namespaces flag not found")
 	}
-	
+
 	// Set multiple values
 	err := namespacesFlag.Value.Set("default,kube-system")
 	if err != nil {
 		t.Errorf("Failed to set namespaces: %v", err)
 	}
-	
+
 	// Test resources flag
 	resourcesFlag := exportCmd.Flags().Lookup("resources")
 	if resourcesFlag == nil {
 		t.Fatal("resources flag not found")
 	}
-	
+
 	err = resourcesFlag.Value.Set("pods,deployments")
 	if err != nil {
 		t.Errorf("Failed to set resources: %v", err)
@@ -198,12 +198,12 @@ func TestRootCmd_PersistentFlags(t *testing.T) {
 	if kubeconfigFlag == nil {
 		t.Error("rootCmd should have kubeconfig flag")
 	}
-	
+
 	configFlag := rootCmd.PersistentFlags().Lookup("config")
 	if configFlag == nil {
 		t.Error("rootCmd should have config flag")
 	}
-	
+
 	// Persistent flags are inherited, but they're looked up via InheritedFlags
 	// or by calling the parent command's PersistentFlags
 }
@@ -216,7 +216,7 @@ func TestInitConfig(t *testing.T) {
 			t.Errorf("initConfig() panicked: %v", r)
 		}
 	}()
-	
+
 	// Call initConfig - it should not error even if config file doesn't exist
 	initConfig()
 }
@@ -241,14 +241,14 @@ func TestExportCmd_BoolFlags(t *testing.T) {
 		{"dry-run flag", "dry-run"},
 		{"all-resources flag", "all-resources"},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			flag := exportCmd.Flags().Lookup(tt.flagName)
 			if flag == nil {
 				t.Fatalf("Flag %s not found", tt.flagName)
 			}
-			
+
 			// Test setting to true
 			err := flag.Value.Set("true")
 			if err != nil {
@@ -257,7 +257,7 @@ func TestExportCmd_BoolFlags(t *testing.T) {
 			if flag.Value.String() != "true" {
 				t.Errorf("%s value = %s, want true", tt.flagName, flag.Value.String())
 			}
-			
+
 			// Test setting to false
 			err = flag.Value.Set("false")
 			if err != nil {
@@ -295,7 +295,7 @@ func TestRootCmd_HasSubcommands(t *testing.T) {
 	if !rootCmd.HasSubCommands() {
 		t.Error("rootCmd should have subcommands")
 	}
-	
+
 	commands := rootCmd.Commands()
 	if len(commands) == 0 {
 		t.Error("rootCmd should have at least one subcommand")
@@ -309,7 +309,7 @@ func TestExportCmd_RunEIsSet(t *testing.T) {
 	}
 }
 
-// TestInteractiveCmd_RunEIsSet tests that RunE is set  
+// TestInteractiveCmd_RunEIsSet tests that RunE is set
 func TestInteractiveCmd_RunEIsSet(t *testing.T) {
 	if interactiveCmd.RunE == nil {
 		t.Error("interactiveCmd.RunE should be set")
@@ -324,7 +324,7 @@ func TestExportInit(t *testing.T) {
 			t.Errorf("export init() panicked: %v", r)
 		}
 	}()
-	
+
 	// Verify command is added to root
 	found := false
 	for _, cmd := range rootCmd.Commands() {
@@ -346,7 +346,7 @@ func TestInteractiveInit(t *testing.T) {
 			t.Errorf("interactive init() panicked: %v", r)
 		}
 	}()
-	
+
 	// Verify command is added to root
 	found := false
 	for _, cmd := range rootCmd.Commands() {
@@ -389,7 +389,7 @@ func TestExportCmd_Aliases(t *testing.T) {
 	}
 }
 
-// TestInteractiveCmd_Aliases tests command aliases  
+// TestInteractiveCmd_Aliases tests command aliases
 func TestInteractiveCmd_Aliases(t *testing.T) {
 	// Interactive command doesn't have aliases, but test the field exists
 	if len(interactiveCmd.Aliases) > 0 {

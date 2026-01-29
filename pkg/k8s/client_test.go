@@ -8,10 +8,10 @@ import (
 
 func TestLoadKubeConfig(t *testing.T) {
 	tests := []struct {
-		name        string
+		name           string
 		kubeconfigPath string
-		setup       func(t *testing.T) string
-		wantErr     bool
+		setup          func(t *testing.T) string
+		wantErr        bool
 	}{
 		{
 			name: "load default kubeconfig",
@@ -90,10 +90,10 @@ users:
 			wantErr: false,
 		},
 		{
-			name:        "fail on non-existent kubeconfig",
+			name:           "fail on non-existent kubeconfig",
 			kubeconfigPath: "/non/existent/path",
-			setup:       func(t *testing.T) string { return "/non/existent/path" },
-			wantErr:     true,
+			setup:          func(t *testing.T) string { return "/non/existent/path" },
+			wantErr:        true,
 		},
 	}
 

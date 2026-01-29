@@ -55,8 +55,8 @@ func TestFormatResourceOptions(t *testing.T) {
 	}
 
 	expectedOptions := map[string]bool{
-		"pods (v1/Pod)":                                  true,
-		"deployments (apps/v1/Deployment)":               true,
+		"pods (v1/Pod)":                                       true,
+		"deployments (apps/v1/Deployment)":                    true,
 		"customresources (custom.io/v1alpha1/CustomResource)": true,
 	}
 
@@ -69,9 +69,9 @@ func TestFormatResourceOptions(t *testing.T) {
 
 func TestParseSelectedContext(t *testing.T) {
 	tests := []struct {
-		name     string
-		input    string
-		want     string
+		name  string
+		input string
+		want  string
 	}{
 		{
 			name:  "parse current context",
@@ -107,10 +107,10 @@ func TestParseSelectedResource(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
-		input    string
-		want     *k8s.ResourceInfo
-		wantNil  bool
+		name    string
+		input   string
+		want    *k8s.ResourceInfo
+		wantNil bool
 	}{
 		{
 			name:  "parse core resource",
@@ -447,10 +447,10 @@ func TestPromptNamespaceSelection_WithMockedAsker(t *testing.T) {
 			wantResultCount: 1,
 		},
 		{
-			name:           "survey error",
-			namespaces:     []string{"default"},
-			mockedError:    errors.New("interrupted"),
-			wantErr:        true,
+			name:        "survey error",
+			namespaces:  []string{"default"},
+			mockedError: errors.New("interrupted"),
+			wantErr:     true,
 		},
 		{
 			name:           "no selection",
@@ -561,7 +561,7 @@ func TestPromptDirectorySelection_WithMockedAsker(t *testing.T) {
 		},
 		{
 			name:        "survey error",
-			defaultDir:   "./output",
+			defaultDir:  "./output",
 			mockedError: errors.New("interrupted"),
 			wantErr:     true,
 		},

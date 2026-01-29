@@ -16,7 +16,7 @@ func TestExecute(t *testing.T) {
 
 	// Reset rootCmd for testing
 	rootCmd.SetArgs([]string{"--help"})
-	
+
 	// Execute should not return error for --help
 	err := rootCmd.Execute()
 	if err != nil {
@@ -28,7 +28,7 @@ func TestRootCmd(t *testing.T) {
 	if rootCmd == nil {
 		t.Fatal("rootCmd is nil")
 	}
-	
+
 	if rootCmd.Use != "manifold-k8s" {
 		t.Errorf("rootCmd.Use = %s, want manifold-k8s", rootCmd.Use)
 	}
