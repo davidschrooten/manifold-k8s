@@ -61,6 +61,10 @@ func ValidateDirectory(input interface{}) error {
 
 // PromptContextSelection prompts the user to select one or more contexts
 func PromptContextSelection(contexts []string, currentContext string) ([]string, error) {
+	return promptContextSelectionWithAsker(askOne, contexts, currentContext)
+}
+
+func promptContextSelectionWithAsker(asker AskOneFunc, contexts []string, currentContext string) ([]string, error) {
 	if len(contexts) == 0 {
 		return nil, errors.New("no contexts available")
 	}
@@ -74,7 +78,7 @@ func PromptContextSelection(contexts []string, currentContext string) ([]string,
 		Default: []string{fmt.Sprintf("%s (current)", currentContext)},
 	}
 	
-	if err := survey.AskOne(prompt, &selected); err != nil {
+	if err := asker(prompt, &selected); err != nil {
 		return nil, fmt.Errorf("failed to select contexts: %w", err)
 	}
 
@@ -89,6 +93,10 @@ func PromptContextSelection(contexts []string, currentContext string) ([]string,
 
 // PromptNamespaceSelection prompts the user to select one or more namespaces
 func PromptNamespaceSelection(namespaces []string) ([]string, error) {
+	return promptNamespaceSelectionWithAsker(askOne, namespaces)
+}
+
+func promptNamespaceSelectionWithAsker(asker AskOneFunc, namespaces []string) ([]string, error) {
 	if len(namespaces) == 0 {
 		return nil, errors.New("no namespaces available")
 	}
@@ -99,7 +107,7 @@ func PromptNamespaceSelection(namespaces []string) ([]string, error) {
 		Options: namespaces,
 	}
 	
-	if err := survey.AskOne(prompt, &selected); err != nil {
+	if err := asker(prompt, &selected); err != nil {
 		return nil, fmt.Errorf("failed to select namespaces: %w", err)
 	}
 
@@ -112,6 +120,10 @@ func PromptNamespaceSelection(namespaces []string) ([]string, error) {
 
 // PromptResourceSelection prompts the user to select one or more resource types
 func PromptResourceSelection(resources []k8s.ResourceInfo) ([]k8s.ResourceInfo, error) {
+	return promptResourceSelectionWithAsker(askOne, resources)
+}
+
+func promptResourceSelectionWithAsker(asker AskOneFunc, resources []k8s.ResourceInfo) ([]k8s.ResourceInfo, error) {
 	if len(resources) == 0 {
 		return nil, errors.New("no resources available")
 	}
@@ -125,7 +137,7 @@ func PromptResourceSelection(resources []k8s.ResourceInfo) ([]k8s.ResourceInfo, 
 		PageSize: 15,
 	}
 	
-	if err := survey.AskOne(prompt, &selected); err != nil {
+	if err := asker(prompt, &selected); err != nil {
 		return nil, fmt.Errorf("failed to select resources: %w", err)
 	}
 
@@ -146,13 +158,17 @@ func PromptResourceSelection(resources []k8s.ResourceInfo) ([]k8s.ResourceInfo, 
 
 // PromptDirectorySelection prompts the user for a target directory
 func PromptDirectorySelection(defaultDir string) (string, error) {
+	return promptDirectorySelectionWithAsker(askOne, defaultDir)
+}
+
+func promptDirectorySelectionWithAsker(asker AskOneFunc, defaultDir string) (string, error) {
 	var directory string
 	prompt := &survey.Input{
 		Message: "Target directory for manifests:",
 		Default: defaultDir,
 	}
 	
-	if err := survey.AskOne(prompt, &directory, survey.WithValidator(ValidateDirectory)); err != nil {
+	if err := asker(prompt, &directory, survey.WithValidator(ValidateDirectory)); err != nil {
 		return "", fmt.Errorf("failed to get directory: %w", err)
 	}
 
@@ -161,13 +177,17 @@ func PromptDirectorySelection(defaultDir string) (string, error) {
 
 // PromptConfirmation prompts the user for a yes/no confirmation
 func PromptConfirmation(message string) (bool, error) {
+	return promptConfirmationWithAsker(askOne, message)
+}
+
+func promptConfirmationWithAsker(asker AskOneFunc, message string) (bool, error) {
 	var confirmed bool
 	prompt := &survey.Confirm{
 		Message: message,
 		Default: false,
 	}
 	
-	if err := survey.AskOne(prompt, &confirmed); err != nil {
+	if err := asker(prompt, &confirmed); err != nil {
 		return false, fmt.Errorf("failed to get confirmation: %w", err)
 	}
 
