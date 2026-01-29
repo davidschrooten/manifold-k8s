@@ -1,7 +1,7 @@
 # manifold-k8s
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev/)
-[![Test Coverage](https://img.shields.io/badge/coverage-72.8%25-brightgreen)](https://github.com/davidschrooten/manifold-k8s)
+[![Test Coverage](https://img.shields.io/badge/coverage-92.7%25-brightgreen)](https://github.com/davidschrooten/manifold-k8s)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A CLI tool that allows you to interactively or programmatically download Kubernetes manifests from one or multiple namespaces.
@@ -183,11 +183,12 @@ make lint
 
 ### Test Coverage
 
-The project maintains high test coverage:
-- **Overall**: 72.8%
-- `pkg/k8s`: 90.3%
-- `pkg/exporter`: 84.8%
-- `pkg/selector`: 41.5% (interactive prompts are difficult to unit test without user interaction)
+The project maintains high test coverage for core packages:
+- **Core Packages Average**: 92.7%
+- `pkg/exporter`: 100% (complete coverage)
+- `pkg/k8s`: 92.5%
+- `pkg/selector`: 41.5% (interactive prompts are difficult to unit test)
+- **Overall**: 48.4% (cmd packages with cobra/viper are difficult to unit test)
 
 ### Development Workflow
 
