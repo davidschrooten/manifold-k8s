@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,6 +41,23 @@ func (r ResourceInfo) GroupVersionResource() schema.GroupVersionResource {
 var excludedResources = map[string]bool{
 	"persistentvolumes":      true,
 	"persistentvolumeclaims": true,
+}
+
+// priorityResources defines the display order for common resources
+var priorityResources = []string{
+	"deployments",
+	"statefulsets",
+	"daemonsets",
+	"replicasets",
+	"ingresses",
+	"services",
+	"configmaps",
+	"secrets",
+	"serviceaccounts",
+	"pods",
+	"jobs",
+	"cronjobs",
+	"persistentvolumeclaims",
 }
 
 // shouldExcludeResource checks if a resource should be excluded
@@ -103,7 +121,97 @@ func DiscoverResources(discoveryClient discovery.DiscoveryInterface) ([]Resource
 		}
 	}
 
+	// Sort resources by priority
+	sortResourcesByPriority(resources)
+
 	return resources, nil
+}
+
+// sortResourcesByPriority sorts resources in the following order:
+// 1. Priority resources (in defined order)
+// 2. Core/standard resources (alphabetically)
+// 3. Custom resources (CRDs) (alphabetically)
+func sortResourcesByPriority(resources []ResourceInfo) {
+	// Create priority map for O(1) lookup
+	priorityMap := make(map[string]int)
+	for i, name := range priorityResources {
+		priorityMap[name] = i
+	}
+
+	sort.SliceStable(resources, func(i, j int) bool {
+		resI := resources[i]
+		resJ := resources[j]
+
+		// Check if either resource is in priority list
+		prioI, hasPrioI := priorityMap[resI.Name]
+		prioJ, hasPrioJ := priorityMap[resJ.Name]
+
+		if hasPrioI && hasPrioJ {
+			// Both are priority resources, sort by priority order
+			return prioI < prioJ
+		}
+		if hasPrioI {
+			// Only i is priority, it comes first
+			return true
+		}
+		if hasPrioJ {
+			// Only j is priority, it comes first
+			return false
+		}
+
+		// Neither is priority resource
+		// Check if they are core/standard vs custom resources
+		isCustomI := isCustomResource(resI)
+		isCustomJ := isCustomResource(resJ)
+
+		if isCustomI && !isCustomJ {
+			// i is custom, j is standard - j comes first
+			return false
+		}
+		if !isCustomI && isCustomJ {
+			// i is standard, j is custom - i comes first
+			return true
+		}
+
+		// Both are same category (both standard or both custom), sort alphabetically
+		return resI.Name < resJ.Name
+	})
+}
+
+// isCustomResource determines if a resource is a custom resource (CRD)
+func isCustomResource(res ResourceInfo) bool {
+	// Core API resources have empty group or well-known groups
+	if res.Group == "" {
+		return false
+	}
+
+	// Well-known Kubernetes API groups (not custom)
+	standardGroups := []string{
+		"apps",
+		"batch",
+		"autoscaling",
+		"policy",
+		"rbac.authorization.k8s.io",
+		"networking.k8s.io",
+		"storage.k8s.io",
+		"apiextensions.k8s.io",
+		"admissionregistration.k8s.io",
+		"scheduling.k8s.io",
+		"coordination.k8s.io",
+		"node.k8s.io",
+		"discovery.k8s.io",
+		"flowcontrol.apiserver.k8s.io",
+		"certificates.k8s.io",
+	}
+
+	for _, sg := range standardGroups {
+		if res.Group == sg {
+			return false
+		}
+	}
+
+	// If not in standard groups, it's a custom resource
+	return true
 }
 
 // GetNamespaces retrieves all namespaces from the cluster
