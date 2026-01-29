@@ -1,0 +1,29 @@
+# Binaries
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+manifold-k8s
+
+# Test artifacts
+*.test
+*.out
+coverage.txt
+coverage.html
+*.prof
+
+# Config files (keep examples)
+config.toml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
