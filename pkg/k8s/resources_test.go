@@ -203,6 +203,99 @@ func TestResourceInfo_GroupVersionResource(t *testing.T) {
 	}
 }
 
+func TestIsCustomResource(t *testing.T) {
+	tests := []struct {
+		name     string
+		resource ResourceInfo
+		want     bool
+	}{
+		{
+			name:     "core resource (empty group)",
+			resource: ResourceInfo{Name: "pods", Group: "", Version: "v1"},
+			want:     false,
+		},
+		{
+			name:     "apps group resource",
+			resource: ResourceInfo{Name: "deployments", Group: "apps", Version: "v1"},
+			want:     false,
+		},
+		{
+			name:     "batch group resource",
+			resource: ResourceInfo{Name: "jobs", Group: "batch", Version: "v1"},
+			want:     false,
+		},
+		{
+			name:     "networking.k8s.io resource",
+			resource: ResourceInfo{Name: "ingresses", Group: "networking.k8s.io", Version: "v1"},
+			want:     false,
+		},
+		{
+			name:     "custom resource",
+			resource: ResourceInfo{Name: "mycustomresources", Group: "example.com", Version: "v1alpha1"},
+			want:     true,
+		},
+		{
+			name:     "another custom resource",
+			resource: ResourceInfo{Name: "foos", Group: "mycompany.io", Version: "v1"},
+			want:     true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := isCustomResource(tt.resource)
+			if got != tt.want {
+				t.Errorf("isCustomResource(%v) = %v, want %v", tt.resource.Name, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSortResourcesByPriority(t *testing.T) {
+	resources := []ResourceInfo{
+		{Name: "customresources", Group: "example.com", Version: "v1"},
+		{Name: "services", Group: "", Version: "v1"},
+		{Name: "configmaps", Group: "", Version: "v1"},
+		{Name: "deployments", Group: "apps", Version: "v1"},
+		{Name: "anothercrd", Group: "mycompany.io", Version: "v1"},
+		{Name: "pods", Group: "", Version: "v1"},
+		{Name: "statefulsets", Group: "apps", Version: "v1"},
+		{Name: "namespaces", Group: "", Version: "v1"},
+	}
+
+	sortResourcesByPriority(resources)
+
+	// Check priority resources come first in order
+	if resources[0].Name != "deployments" {
+		t.Errorf("First resource should be deployments, got %s", resources[0].Name)
+	}
+	if resources[1].Name != "statefulsets" {
+		t.Errorf("Second resource should be statefulsets, got %s", resources[1].Name)
+	}
+	if resources[2].Name != "services" {
+		t.Errorf("Third resource should be services, got %s", resources[2].Name)
+	}
+	if resources[3].Name != "configmaps" {
+		t.Errorf("Fourth resource should be configmaps, got %s", resources[3].Name)
+	}
+	if resources[4].Name != "pods" {
+		t.Errorf("Fifth resource should be pods, got %s", resources[4].Name)
+	}
+
+	// Check standard non-priority resources come before CRDs
+	if resources[5].Name != "namespaces" {
+		t.Errorf("Sixth resource should be namespaces (standard), got %s", resources[5].Name)
+	}
+
+	// Check CRDs come last (sorted alphabetically)
+	if resources[6].Name != "anothercrd" {
+		t.Errorf("Seventh resource should be anothercrd (CRD), got %s", resources[6].Name)
+	}
+	if resources[7].Name != "customresources" {
+		t.Errorf("Eighth resource should be customresources (CRD), got %s", resources[7].Name)
+	}
+}
+
 // Helper function to create namespace object
 func v1Namespace(name string) *v1.Namespace {
 	return &v1.Namespace{
