@@ -106,7 +106,7 @@ func runExport(cmd *cobra.Command, args []string) error {
 		resourceMap := buildResourceMap(discoveredResources)
 		var notFound []string
 		selectedResources, notFound = selectRequestedResources(resourceMap, exportResources)
-		
+
 		// Warn about not found resources
 		for _, resName := range notFound {
 			fmt.Fprintf(os.Stderr, "Warning: resource type %s not found in cluster\n", resName)

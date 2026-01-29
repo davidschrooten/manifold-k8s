@@ -58,7 +58,7 @@ func TestDiscoverResources(t *testing.T) {
 	// Create a fake clientset with API resources
 	fakeClient := fake.NewSimpleClientset()
 	fakeDiscovery := fakeClient.Discovery().(*fakediscovery.FakeDiscovery)
-	
+
 	// Set up fake API resources
 	fakeDiscovery.Resources = []*metav1.APIResourceList{
 		{
@@ -191,7 +191,7 @@ func TestResourceInfo_GroupVersionResource(t *testing.T) {
 	}
 
 	gvr := resource.GroupVersionResource()
-	
+
 	expected := schema.GroupVersionResource{
 		Group:    "apps",
 		Version:  "v1",
@@ -299,7 +299,7 @@ func TestSortResourcesByPriority(t *testing.T) {
 func TestDiscoverResources_SubresourcesFiltered(t *testing.T) {
 	fakeClient := fake.NewSimpleClientset()
 	fakeDiscovery := fakeClient.Discovery().(*fakediscovery.FakeDiscovery)
-	
+
 	fakeDiscovery.Resources = []*metav1.APIResourceList{
 		{
 			GroupVersion: "v1",
@@ -328,13 +328,13 @@ func TestDiscoverResources_SubresourcesFiltered(t *testing.T) {
 func TestDiscoverResources_MissingVerbs(t *testing.T) {
 	fakeClient := fake.NewSimpleClientset()
 	fakeDiscovery := fakeClient.Discovery().(*fakediscovery.FakeDiscovery)
-	
+
 	fakeDiscovery.Resources = []*metav1.APIResourceList{
 		{
 			GroupVersion: "v1",
 			APIResources: []metav1.APIResource{
 				{Name: "pods", Namespaced: true, Kind: "Pod", Verbs: []string{"list", "get"}},
-				{Name: "services", Namespaced: true, Kind: "Service", Verbs: []string{"list"}}, // missing 'get'
+				{Name: "services", Namespaced: true, Kind: "Service", Verbs: []string{"list"}},    // missing 'get'
 				{Name: "configmaps", Namespaced: true, Kind: "ConfigMap", Verbs: []string{"get"}}, // missing 'list'
 			},
 		},

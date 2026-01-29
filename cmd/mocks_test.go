@@ -41,7 +41,7 @@ func createMockKubeconfig(t *testing.T) string {
 // mockExportCmd creates a testable export command
 func mockExportCmd(t *testing.T) *cobra.Command {
 	tmpDir := t.TempDir()
-	
+
 	cmd := &cobra.Command{
 		Use: "export-test",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -52,7 +52,7 @@ func mockExportCmd(t *testing.T) *cobra.Command {
 			return nil
 		},
 	}
-	
+
 	// Set up flags
 	cmd.Flags().StringVarP(&exportOutputDir, "output", "o", tmpDir, "output directory")
 	cmd.Flags().StringVarP(&exportCtx, "context", "c", "test-context", "kubernetes context")
@@ -60,7 +60,7 @@ func mockExportCmd(t *testing.T) *cobra.Command {
 	cmd.Flags().StringSliceVarP(&exportResources, "resources", "r", []string{"pods"}, "resources")
 	cmd.Flags().BoolVarP(&exportAllRes, "all-resources", "a", false, "all resources")
 	cmd.Flags().BoolVar(&exportDryRun, "dry-run", false, "dry run")
-	
+
 	return cmd
 }
 
@@ -73,7 +73,7 @@ func TestRunExportWithMocks(t *testing.T) {
 	origResources := exportResources
 	origAllRes := exportAllRes
 	origDryRun := exportDryRun
-	
+
 	defer func() {
 		exportOutputDir = origOutputDir
 		exportCtx = origCtx
@@ -82,7 +82,7 @@ func TestRunExportWithMocks(t *testing.T) {
 		exportAllRes = origAllRes
 		exportDryRun = origDryRun
 	}()
-	
+
 	// Set up test values
 	tmpDir := t.TempDir()
 	exportOutputDir = tmpDir
@@ -91,12 +91,12 @@ func TestRunExportWithMocks(t *testing.T) {
 	exportResources = []string{"pods"}
 	exportAllRes = false
 	exportDryRun = true
-	
+
 	// Create mock kubeconfig
 	kubeconfigPath := createMockKubeconfig(t)
 	os.Setenv("KUBECONFIG", kubeconfigPath)
 	defer os.Unsetenv("KUBECONFIG")
-	
+
 	// Test that we can call the command structure
 	cmd := mockExportCmd(t)
 	err := cmd.Execute()
@@ -105,32 +105,32 @@ func TestRunExportWithMocks(t *testing.T) {
 	}
 }
 
-// TestRunInteractiveWithMocks tests runInteractive with mocked dependencies  
+// TestRunInteractiveWithMocks tests runInteractive with mocked dependencies
 func TestRunInteractiveWithMocks(t *testing.T) {
 	// Save original values
 	origOutputDir := interactiveOutputDir
 	origDryRun := interactiveDryRun
-	
+
 	defer func() {
 		interactiveOutputDir = origOutputDir
 		interactiveDryRun = origDryRun
 	}()
-	
+
 	// Set up test values
 	tmpDir := t.TempDir()
 	interactiveOutputDir = tmpDir
 	interactiveDryRun = true
-	
+
 	// Create mock kubeconfig
 	kubeconfigPath := createMockKubeconfig(t)
 	os.Setenv("KUBECONFIG", kubeconfigPath)
 	defer os.Unsetenv("KUBECONFIG")
-	
+
 	// Test command structure (actual execution would require prompts)
 	if interactiveCmd == nil {
 		t.Fatal("interactiveCmd is nil")
 	}
-	
+
 	// Verify flags are accessible
 	if interactiveOutputDir != tmpDir {
 		t.Errorf("interactiveOutputDir = %s, want %s", interactiveOutputDir, tmpDir)
@@ -140,11 +140,11 @@ func TestRunInteractiveWithMocks(t *testing.T) {
 // TestExportValidation tests export command validation logic
 func TestExportValidation(t *testing.T) {
 	tests := []struct {
-		name          string
-		allRes        bool
-		resources     []string
-		wantErr       bool
-		errContains   string
+		name        string
+		allRes      bool
+		resources   []string
+		wantErr     bool
+		errContains string
 	}{
 		{
 			name:      "all-resources flag set",
@@ -166,22 +166,22 @@ func TestExportValidation(t *testing.T) {
 			errContains: "either --resources or --all-resources is required",
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Simulate the validation logic from runExport
 			exportAllRes = tt.allRes
 			exportResources = tt.resources
-			
+
 			var err error
 			if !exportAllRes && len(exportResources) == 0 {
 				err = fmt.Errorf("either --resources or --all-resources is required")
 			}
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Validation error = %v, wantErr %v", err, tt.wantErr)
 			}
-			
+
 			if err != nil && tt.errContains != "" {
 				if !contains(err.Error(), tt.errContains) {
 					t.Errorf("Error = %v, want to contain %s", err, tt.errContains)
@@ -211,13 +211,13 @@ func TestResourceMapping(t *testing.T) {
 		{Name: "deployments", Group: "apps", Version: "v1", Kind: "Deployment"},
 		{Name: "services", Group: "", Version: "v1", Kind: "Service"},
 	}
-	
+
 	// Build map like in runExport
 	resourceMap := make(map[string]k8s.ResourceInfo)
 	for _, res := range discoveredResources {
 		resourceMap[res.Name] = res
 	}
-	
+
 	tests := []struct {
 		name         string
 		requestedRes []string
@@ -243,12 +243,12 @@ func TestResourceMapping(t *testing.T) {
 			wantWarning:  2,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var selectedResources []k8s.ResourceInfo
 			warnings := 0
-			
+
 			for _, resName := range tt.requestedRes {
 				if res, found := resourceMap[resName]; found {
 					selectedResources = append(selectedResources, res)
@@ -256,7 +256,7 @@ func TestResourceMapping(t *testing.T) {
 					warnings++
 				}
 			}
-			
+
 			if len(selectedResources) != tt.wantFound {
 				t.Errorf("Found %d resources, want %d", len(selectedResources), tt.wantFound)
 			}
@@ -274,10 +274,10 @@ func TestClusterScopedResourceSkip(t *testing.T) {
 		{Name: "nodes", Namespaced: false},
 		{Name: "deployments", Namespaced: true},
 	}
-	
+
 	namespace := "default"
 	var processedCount int
-	
+
 	for _, resource := range resources {
 		// Logic from runExport/runInteractive
 		if !resource.Namespaced && namespace != "" {
@@ -285,7 +285,7 @@ func TestClusterScopedResourceSkip(t *testing.T) {
 		}
 		processedCount++
 	}
-	
+
 	// Should only process the 2 namespaced resources
 	if processedCount != 2 {
 		t.Errorf("Processed %d resources, want 2", processedCount)
@@ -301,11 +301,11 @@ func TestDryRunMode(t *testing.T) {
 		{"dry run enabled", true},
 		{"dry run disabled", false},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			exportDryRun = tt.dryRun
-			
+
 			// Simulate the dry-run check from runExport
 			if exportDryRun {
 				// In dry-run mode, we would print but not export
@@ -314,7 +314,7 @@ func TestDryRunMode(t *testing.T) {
 				// In normal mode, we would actually export
 				t.Log("Would actually export")
 			}
-			
+
 			// Test passes if no panic
 		})
 	}

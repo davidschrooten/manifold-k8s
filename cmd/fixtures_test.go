@@ -84,7 +84,7 @@ func (m *mockNamespaceableResource) Get(ctx context.Context, name string, option
 func (m *mockNamespaceableResource) List(ctx context.Context, opts metav1.ListOptions) (*unstructured.UnstructuredList, error) {
 	// Return mock data based on resource type
 	items := []unstructured.Unstructured{}
-	
+
 	if m.gvr.Resource == "pods" {
 		items = append(items, unstructured.Unstructured{
 			Object: map[string]interface{}{
@@ -108,7 +108,7 @@ func (m *mockNamespaceableResource) List(ctx context.Context, opts metav1.ListOp
 			},
 		})
 	}
-	
+
 	return &unstructured.UnstructuredList{Items: items}, nil
 }
 
@@ -147,15 +147,15 @@ func enableStubs() {
 	stubLoadKubeConfig = func(path string) (*api.Config, error) {
 		return mockKubeConfig(), nil
 	}
-	
+
 	stubNewClient = func(config *api.Config, context string) (*k8s.Client, error) {
 		return mockK8sClient(), nil
 	}
-	
+
 	stubDiscoverResources = func(discovery.DiscoveryInterface) ([]k8s.ResourceInfo, error) {
 		return mockDiscoveredResources(), nil
 	}
-	
+
 	stubGetNamespaces = func(ctx context.Context, client *k8s.Client) ([]string, error) {
 		return mockNamespaces(), nil
 	}

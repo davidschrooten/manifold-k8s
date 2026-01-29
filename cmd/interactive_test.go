@@ -31,7 +31,7 @@ func TestInteractiveCmd(t *testing.T) {
 func TestInteractiveCmd_Help(t *testing.T) {
 	// Test that --help works
 	interactiveCmd.SetArgs([]string{"--help"})
-	
+
 	err := interactiveCmd.Execute()
 	if err != nil {
 		t.Errorf("interactiveCmd.Execute() with --help returned error: %v", err)
@@ -66,21 +66,21 @@ func TestRunInteractive_LoadKubeConfigError(t *testing.T) {
 	// Setup
 	enableStubs()
 	defer disableStubs()
-	
+
 	stubLoadKubeConfig = func(path string) (*api.Config, error) {
 		return nil, assert.AnError
 	}
-	
+
 	// Set up viper
 	viper.Set("kubeconfig", "/fake/path")
-	
+
 	// Set flags
 	interactiveDryRun = false
 	interactiveOutputDir = ""
-	
+
 	// Run
 	err := runInteractive(interactiveCmd, []string{})
-	
+
 	// Assert
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to load kubeconfig")
@@ -90,21 +90,21 @@ func TestRunInteractive_NewClientError(t *testing.T) {
 	// Setup
 	enableStubs()
 	defer disableStubs()
-	
+
 	stubNewClient = func(config *api.Config, context string) (*k8s.Client, error) {
 		return nil, assert.AnError
 	}
-	
+
 	// Set up viper
 	viper.Set("kubeconfig", "/fake/path")
-	
+
 	// Set flags
 	interactiveDryRun = false
 	interactiveOutputDir = ""
-	
+
 	// Run
 	err := runInteractive(interactiveCmd, []string{})
-	
+
 	// Assert
 	// Note: we can't easily test beyond this point without mocking selector prompts
 	// The error will occur when trying to prompt for context selection

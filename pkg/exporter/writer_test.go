@@ -204,7 +204,7 @@ func TestExporter_Summary(t *testing.T) {
 
 	// Export some resources
 	gvr := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
-	
+
 	for i := 0; i < 3; i++ {
 		obj := &unstructured.Unstructured{
 			Object: map[string]interface{}{
@@ -231,7 +231,7 @@ func TestExporter_Summary(t *testing.T) {
 func TestWriteManifest_DirectoryError(t *testing.T) {
 	// Use an invalid directory path that cannot be created
 	invalidPath := "/root/nonexistent/test.yaml"
-	
+
 	obj := &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": "v1",
@@ -254,7 +254,7 @@ func TestExportResource_WriteError(t *testing.T) {
 	exporter := NewExporter("/root/nonexistent")
 
 	gvr := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
-	
+
 	obj := &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": "v1",
@@ -281,7 +281,7 @@ func TestExportResource_EmptyName(t *testing.T) {
 	exporter := NewExporter(t.TempDir())
 
 	gvr := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
-	
+
 	// Object with no name
 	obj := &unstructured.Unstructured{
 		Object: map[string]interface{}{
@@ -309,10 +309,10 @@ func TestWriteManifest_WriteFileError(t *testing.T) {
 	if err := os.WriteFile(blockingFile, []byte("test"), 0644); err != nil {
 		t.Fatal(err)
 	}
-	
+
 	// Try to write to a path that requires creating a directory where a file exists
 	invalidPath := filepath.Join(blockingFile, "subdir", "test.yaml")
-	
+
 	obj := &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": "v1",
@@ -333,7 +333,7 @@ func TestWriteManifest_WriteFileError(t *testing.T) {
 func TestWriteManifest_InvalidYAML(t *testing.T) {
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "test.yaml")
-	
+
 	// Create an object with an invalid value that can't be marshaled to YAML
 	obj := &unstructured.Unstructured{
 		Object: map[string]interface{}{
@@ -363,9 +363,9 @@ func TestWriteManifest_FileWriteError(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.Chmod(readOnlyDir, 0755) // cleanup
-	
+
 	filePath := filepath.Join(readOnlyDir, "test.yaml")
-	
+
 	obj := &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": "v1",
@@ -388,9 +388,9 @@ func TestWriteManifest_FileWriteError(t *testing.T) {
 
 // Helper function
 func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) && 
-		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr || 
-		len(s) > len(substr)+1 && containsMiddle(s, substr)))
+	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) &&
+		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
+			len(s) > len(substr)+1 && containsMiddle(s, substr)))
 }
 
 func containsMiddle(s, substr string) bool {

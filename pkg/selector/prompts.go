@@ -70,14 +70,14 @@ func promptContextSelectionWithAsker(asker AskOneFunc, contexts []string, curren
 	}
 
 	options := FormatContextOptions(contexts, currentContext)
-	
+
 	var selected []string
 	prompt := &survey.MultiSelect{
 		Message: "Select cluster context(s):",
 		Options: options,
 		Default: []string{fmt.Sprintf("%s (current)", currentContext)},
 	}
-	
+
 	if err := asker(prompt, &selected); err != nil {
 		return nil, fmt.Errorf("failed to select contexts: %w", err)
 	}
@@ -106,7 +106,7 @@ func promptNamespaceSelectionWithAsker(asker AskOneFunc, namespaces []string) ([
 		Message: "Select namespace(s):",
 		Options: namespaces,
 	}
-	
+
 	if err := asker(prompt, &selected); err != nil {
 		return nil, fmt.Errorf("failed to select namespaces: %w", err)
 	}
@@ -129,14 +129,14 @@ func promptResourceSelectionWithAsker(asker AskOneFunc, resources []k8s.Resource
 	}
 
 	options := FormatResourceOptions(resources)
-	
+
 	var selected []string
 	prompt := &survey.MultiSelect{
 		Message:  "Select resource type(s):",
 		Options:  options,
 		PageSize: 15,
 	}
-	
+
 	if err := asker(prompt, &selected); err != nil {
 		return nil, fmt.Errorf("failed to select resources: %w", err)
 	}
@@ -167,7 +167,7 @@ func promptDirectorySelectionWithAsker(asker AskOneFunc, defaultDir string) (str
 		Message: "Target directory for manifests:",
 		Default: defaultDir,
 	}
-	
+
 	if err := asker(prompt, &directory, survey.WithValidator(ValidateDirectory)); err != nil {
 		return "", fmt.Errorf("failed to get directory: %w", err)
 	}
@@ -186,7 +186,7 @@ func promptConfirmationWithAsker(asker AskOneFunc, message string) (bool, error)
 		Message: message,
 		Default: false,
 	}
-	
+
 	if err := asker(prompt, &confirmed); err != nil {
 		return false, fmt.Errorf("failed to get confirmation: %w", err)
 	}

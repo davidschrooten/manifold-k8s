@@ -103,13 +103,13 @@ func TestRunExport_Success(t *testing.T) {
 	// Setup
 	enableStubs()
 	defer disableStubs()
-	
+
 	// Create temp dir for output
 	tmpDir := t.TempDir()
-	
+
 	// Set up viper
 	viper.Set("kubeconfig", "/fake/path")
-	
+
 	// Set flags
 	exportDryRun = false
 	exportOutputDir = tmpDir
@@ -117,10 +117,10 @@ func TestRunExport_Success(t *testing.T) {
 	exportNamespaces = []string{"default"}
 	exportResources = []string{"pods"}
 	exportAllRes = false
-	
+
 	// Run
 	err := runExport(exportCmd, []string{})
-	
+
 	// Assert
 	assert.NoError(t, err)
 }
@@ -129,13 +129,13 @@ func TestRunExport_DryRun(t *testing.T) {
 	// Setup
 	enableStubs()
 	defer disableStubs()
-	
+
 	// Create temp dir
 	tmpDir := t.TempDir()
-	
+
 	// Set up viper
 	viper.Set("kubeconfig", "/fake/path")
-	
+
 	// Set flags
 	exportDryRun = true
 	exportOutputDir = tmpDir
@@ -143,13 +143,13 @@ func TestRunExport_DryRun(t *testing.T) {
 	exportNamespaces = []string{"default"}
 	exportResources = []string{"pods"}
 	exportAllRes = false
-	
+
 	// Run
 	err := runExport(exportCmd, []string{})
-	
+
 	// Assert
 	assert.NoError(t, err)
-	
+
 	// Verify no files were created
 	entries, _ := os.ReadDir(tmpDir)
 	assert.Equal(t, 0, len(entries))
@@ -159,13 +159,13 @@ func TestRunExport_AllResources(t *testing.T) {
 	// Setup
 	enableStubs()
 	defer disableStubs()
-	
+
 	// Create temp dir
 	tmpDir := t.TempDir()
-	
+
 	// Set up viper
 	viper.Set("kubeconfig", "/fake/path")
-	
+
 	// Set flags
 	exportDryRun = false
 	exportOutputDir = tmpDir
@@ -173,10 +173,10 @@ func TestRunExport_AllResources(t *testing.T) {
 	exportNamespaces = []string{"default"}
 	exportResources = nil
 	exportAllRes = true
-	
+
 	// Run
 	err := runExport(exportCmd, []string{})
-	
+
 	// Assert
 	assert.NoError(t, err)
 }
@@ -185,13 +185,13 @@ func TestRunExport_MultipleNamespaces(t *testing.T) {
 	// Setup
 	enableStubs()
 	defer disableStubs()
-	
+
 	// Create temp dir
 	tmpDir := t.TempDir()
-	
+
 	// Set up viper
 	viper.Set("kubeconfig", "/fake/path")
-	
+
 	// Set flags
 	exportDryRun = false
 	exportOutputDir = tmpDir
@@ -199,10 +199,10 @@ func TestRunExport_MultipleNamespaces(t *testing.T) {
 	exportNamespaces = []string{"default", "kube-system"}
 	exportResources = []string{"pods", "deployments"}
 	exportAllRes = false
-	
+
 	// Run
 	err := runExport(exportCmd, []string{})
-	
+
 	// Assert
 	assert.NoError(t, err)
 }
@@ -211,13 +211,13 @@ func TestRunExport_InvalidFlags(t *testing.T) {
 	// Setup
 	enableStubs()
 	defer disableStubs()
-	
+
 	// Create temp dir
 	tmpDir := t.TempDir()
-	
+
 	// Set up viper
 	viper.Set("kubeconfig", "/fake/path")
-	
+
 	// Set flags (neither --resources nor --all-resources)
 	exportDryRun = false
 	exportOutputDir = tmpDir
@@ -225,10 +225,10 @@ func TestRunExport_InvalidFlags(t *testing.T) {
 	exportNamespaces = []string{"default"}
 	exportResources = nil
 	exportAllRes = false
-	
+
 	// Run
 	err := runExport(exportCmd, []string{})
-	
+
 	// Assert
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "either --resources or --all-resources is required")
@@ -238,17 +238,17 @@ func TestRunExport_LoadKubeConfigError(t *testing.T) {
 	// Setup - enable stubs but override to return error
 	enableStubs()
 	defer disableStubs()
-	
+
 	stubLoadKubeConfig = func(path string) (*api.Config, error) {
 		return nil, assert.AnError
 	}
-	
+
 	// Create temp dir
 	tmpDir := t.TempDir()
-	
+
 	// Set up viper
 	viper.Set("kubeconfig", "/fake/path")
-	
+
 	// Set flags
 	exportDryRun = false
 	exportOutputDir = tmpDir
@@ -256,10 +256,10 @@ func TestRunExport_LoadKubeConfigError(t *testing.T) {
 	exportNamespaces = []string{"default"}
 	exportResources = []string{"pods"}
 	exportAllRes = false
-	
+
 	// Run
 	err := runExport(exportCmd, []string{})
-	
+
 	// Assert
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to load kubeconfig")
@@ -269,17 +269,17 @@ func TestRunExport_NewClientError(t *testing.T) {
 	// Setup
 	enableStubs()
 	defer disableStubs()
-	
+
 	stubNewClient = func(config *api.Config, context string) (*k8s.Client, error) {
 		return nil, assert.AnError
 	}
-	
+
 	// Create temp dir
 	tmpDir := t.TempDir()
-	
+
 	// Set up viper
 	viper.Set("kubeconfig", "/fake/path")
-	
+
 	// Set flags
 	exportDryRun = false
 	exportOutputDir = tmpDir
@@ -287,10 +287,10 @@ func TestRunExport_NewClientError(t *testing.T) {
 	exportNamespaces = []string{"default"}
 	exportResources = []string{"pods"}
 	exportAllRes = false
-	
+
 	// Run
 	err := runExport(exportCmd, []string{})
-	
+
 	// Assert
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to create client")
@@ -300,17 +300,17 @@ func TestRunExport_DiscoverResourcesError(t *testing.T) {
 	// Setup
 	enableStubs()
 	defer disableStubs()
-	
+
 	stubDiscoverResources = func(discovery.DiscoveryInterface) ([]k8s.ResourceInfo, error) {
 		return nil, assert.AnError
 	}
-	
+
 	// Create temp dir
 	tmpDir := t.TempDir()
-	
+
 	// Set up viper
 	viper.Set("kubeconfig", "/fake/path")
-	
+
 	// Set flags
 	exportDryRun = false
 	exportOutputDir = tmpDir
@@ -318,10 +318,10 @@ func TestRunExport_DiscoverResourcesError(t *testing.T) {
 	exportNamespaces = []string{"default"}
 	exportResources = []string{"pods"}
 	exportAllRes = false
-	
+
 	// Run
 	err := runExport(exportCmd, []string{})
-	
+
 	// Assert
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to discover resources")
@@ -331,13 +331,13 @@ func TestRunExport_NoValidResources(t *testing.T) {
 	// Setup
 	enableStubs()
 	defer disableStubs()
-	
+
 	// Create temp dir
 	tmpDir := t.TempDir()
-	
+
 	// Set up viper
 	viper.Set("kubeconfig", "/fake/path")
-	
+
 	// Set flags with non-existent resource type
 	exportDryRun = false
 	exportOutputDir = tmpDir
@@ -345,23 +345,23 @@ func TestRunExport_NoValidResources(t *testing.T) {
 	exportNamespaces = []string{"default"}
 	exportResources = []string{"nonexistent"}
 	exportAllRes = false
-	
+
 	// Capture stderr
 	old := os.Stderr
 	r, w, _ := os.Pipe()
 	os.Stderr = w
-	
+
 	// Run
 	err := runExport(exportCmd, []string{})
-	
+
 	// Restore stderr
 	w.Close()
 	os.Stderr = old
-	
+
 	var buf bytes.Buffer
 	buf.ReadFrom(r)
 	stderr := buf.String()
-	
+
 	// Assert
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "no valid resource types found")
@@ -372,13 +372,13 @@ func TestRunExport_WithOutputFiles(t *testing.T) {
 	// Setup
 	enableStubs()
 	defer disableStubs()
-	
+
 	// Create temp dir
 	tmpDir := t.TempDir()
-	
+
 	// Set up viper
 	viper.Set("kubeconfig", "/fake/path")
-	
+
 	// Set flags
 	exportDryRun = false
 	exportOutputDir = tmpDir
@@ -386,13 +386,13 @@ func TestRunExport_WithOutputFiles(t *testing.T) {
 	exportNamespaces = []string{"default"}
 	exportResources = []string{"pods"}
 	exportAllRes = false
-	
+
 	// Run
 	err := runExport(exportCmd, []string{})
-	
+
 	// Assert
 	assert.NoError(t, err)
-	
+
 	// Check that output directory exists and has content
 	entries, err := os.ReadDir(tmpDir)
 	assert.NoError(t, err)
