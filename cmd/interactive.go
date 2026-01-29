@@ -21,7 +21,7 @@ var (
 )
 
 var interactiveCmd = &cobra.Command{
-	Use:   "interactive",
+	Use:   "kubectl-manifests",
 	Short: "Interactively download Kubernetes manifests",
 	Long: `Download Kubernetes manifests by interactively selecting:
 - Cluster(s) from kubeconfig
@@ -40,6 +40,8 @@ func init() {
 	interactiveCmd.Flags().StringVarP(&interactiveOutputDir, "output", "o", "", "output directory (will be prompted if not provided)")
 }
 
+// runInteractive is excluded from coverage as it requires user interaction
+// coverage:ignore
 func runInteractive(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 

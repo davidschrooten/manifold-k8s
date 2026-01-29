@@ -24,7 +24,7 @@ var (
 )
 
 var exportCmd = &cobra.Command{
-	Use:   "export",
+	Use:   "kubectl-manifests-export",
 	Short: "Export Kubernetes manifests non-interactively",
 	Long: `Export Kubernetes manifests by specifying context, namespaces, and resources.
 
@@ -32,8 +32,8 @@ This command requires all parameters to be provided via flags and does not promp
 It is designed for scripting and CI/CD pipelines.
 
 Examples:
-  manifold-k8s export --context prod --namespaces default,kube-system --resources pods,deployments -o ./output
-  manifold-k8s export --context staging --namespaces myapp --all-resources -o ./backup`,
+  manifold-k8s kubectl-manifests-export --context prod --namespaces default,kube-system --resources pods,deployments -o ./output
+  manifold-k8s kubectl-manifests-export --context staging --namespaces myapp --all-resources -o ./backup`,
 	RunE: runExport,
 }
 

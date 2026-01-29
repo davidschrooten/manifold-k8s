@@ -17,8 +17,8 @@ func TestExportCmd(t *testing.T) {
 		t.Fatal("exportCmd is nil")
 	}
 
-	if exportCmd.Use != "export" {
-		t.Errorf("exportCmd.Use = %s, want export", exportCmd.Use)
+	if exportCmd.Use != "kubectl-manifests-export" {
+		t.Errorf("exportCmd.Use = %s, want kubectl-manifests-export", exportCmd.Use)
 	}
 
 	// Test that command has required flags

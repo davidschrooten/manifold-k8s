@@ -9,7 +9,7 @@ import (
 // TestRootCmd_Version tests version flag (if we add it later)
 func TestRootCmd_SubCommands(t *testing.T) {
 	// Test that root command has expected subcommands
-	expectedCommands := []string{"export", "interactive"}
+	expectedCommands := []string{"kubectl-manifests-export", "kubectl-manifests"}
 
 	commands := rootCmd.Commands()
 	found := make(map[string]bool)
@@ -146,8 +146,8 @@ func TestCommandDescriptions(t *testing.T) {
 		wantLong  bool
 	}{
 		{rootCmd, "root", "manifold-k8s", true, true},
-		{exportCmd, "export", "export", true, true},
-		{interactiveCmd, "interactive", "interactive", true, true},
+		{exportCmd, "export", "kubectl-manifests-export", true, true},
+		{interactiveCmd, "interactive", "kubectl-manifests", true, true},
 	}
 
 	for _, tt := range tests {
@@ -328,13 +328,13 @@ func TestExportInit(t *testing.T) {
 	// Verify command is added to root
 	found := false
 	for _, cmd := range rootCmd.Commands() {
-		if cmd.Name() == "export" {
+		if cmd.Name() == "kubectl-manifests-export" {
 			found = true
 			break
 		}
 	}
 	if !found {
-		t.Error("export command not found in root commands")
+		t.Error("kubectl-manifests-export command not found in root commands")
 	}
 }
 
@@ -350,13 +350,13 @@ func TestInteractiveInit(t *testing.T) {
 	// Verify command is added to root
 	found := false
 	for _, cmd := range rootCmd.Commands() {
-		if cmd.Name() == "interactive" {
+		if cmd.Name() == "kubectl-manifests" {
 			found = true
 			break
 		}
 	}
 	if !found {
-		t.Error("interactive command not found in root commands")
+		t.Error("kubectl-manifests command not found in root commands")
 	}
 }
 

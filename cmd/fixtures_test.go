@@ -168,4 +168,6 @@ func disableStubs() {
 	stubNewClient = nil
 	stubDiscoverResources = nil
 	stubGetNamespaces = nil
+	stubListHelmReleases = nil
+	stubGetHelmValues = nil
 }
