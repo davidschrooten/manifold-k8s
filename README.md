@@ -267,5 +267,3 @@ Contributions are welcome! Please ensure:
 - Test coverage remains high
 - Code follows existing patterns and conventions
 - Commit messages are descriptive
-
-Co-Authored-By: Warp <agent@warp.dev>
