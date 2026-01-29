@@ -1,6 +1,12 @@
 # manifold-k8s
 
-A CLI tool that allows you to interactively select and download Kubernetes manifests from one or multiple namespaces.
+[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev/)
+[![Test Coverage - k8s](https://img.shields.io/badge/coverage%20(k8s)-87.5%25-brightgreen)](https://github.com/davidschrooten/manifold-k8s)
+[![Test Coverage - exporter](https://img.shields.io/badge/coverage%20(exporter)-84.8%25-brightgreen)](https://github.com/davidschrooten/manifold-k8s)
+[![Test Coverage - selector](https://img.shields.io/badge/coverage%20(selector)-32.3%25-yellow)](https://github.com/davidschrooten/manifold-k8s)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+A CLI tool that allows you to interactively or programmatically download Kubernetes manifests from one or multiple namespaces.
 
 ## Features
 
@@ -32,10 +38,14 @@ go install github.com/davidschrooten/manifold-k8s@latest
 
 ## Usage
 
-### Basic Usage
+manifold-k8s provides two commands:
+- `interactive`: Interactive mode with prompts (best for exploration)
+- `export`: Non-interactive mode with flags (best for scripting/CI-CD)
+
+### Interactive Mode
 
 ```bash
-manifold-k8s download
+manifold-k8s interactive
 ```
 
 This will start an interactive session that guides you through:
@@ -44,61 +54,88 @@ This will start an interactive session that guides you through:
 3. Selecting resource type(s) to export
 4. Choosing a target directory
 
-### Command Line Options
+### Export Mode (Non-Interactive)
 
 ```bash
-manifold-k8s download [flags]
+manifold-k8s export --context prod --namespaces default --resources pods,deployments -o ./output
+```
+
+This requires all parameters via flags (no prompts).
+
+### Command Line Options
+
+**Interactive Command:**
+```bash
+manifold-k8s interactive [flags]
 
 Flags:
-  -a, --all-resources        Export all resource types (non-interactive mode)
-  -c, --context string       Kubernetes context (non-interactive mode)
-      --dry-run              Preview what would be downloaded without writing files
-  -n, --namespaces strings   Namespaces to export (comma-separated, non-interactive mode)
-  -o, --output string        Output directory (will be prompted if not provided)
+      --dry-run         Preview what would be downloaded without writing files
+  -o, --output string   Output directory (will be prompted if not provided)
+```
+
+**Export Command:**
+```bash
+manifold-k8s export [flags]
+
+Flags:
+  -a, --all-resources        Export all resource types
+  -c, --context string       Kubernetes context (required)
+      --dry-run              Preview what would be exported without writing files
+  -n, --namespaces strings   Namespaces to export (comma-separated, required)
+  -o, --output string        Output directory (required)
   -r, --resources strings    Resource types to export (comma-separated, e.g. pods,deployments)
-      --kubeconfig string    Path to kubeconfig file (default is $HOME/.kube/config)
-      --config string        Config file (default is ./config.toml)
+```
+
+**Global Flags:**
+```bash
+  --kubeconfig string    Path to kubeconfig file (default is $HOME/.kube/config)
+  --config string        Config file (default is ./config.toml)
 ```
 
 ### Examples
 
-#### Interactive Mode
+#### Interactive Command
 
-**Export from current cluster to a specific directory:**
+**Basic interactive use:**
 ```bash
-manifold-k8s download -o ./my-manifests
+manifold-k8s interactive
 ```
 
-**Preview what would be exported (dry-run):**
+**Interactive with pre-specified output directory:**
 ```bash
-manifold-k8s download --dry-run
+manifold-k8s interactive -o ./my-manifests
+```
+
+**Interactive dry-run:**
+```bash
+manifold-k8s interactive --dry-run
 ```
 
 **Use a specific kubeconfig:**
 ```bash
-manifold-k8s download --kubeconfig ~/.kube/config-prod
+manifold-k8s interactive --kubeconfig ~/.kube/config-prod
 ```
 
-#### Non-Interactive Mode
+#### Export Command (Non-Interactive)
 
 **Export specific resources from specific namespaces:**
 ```bash
-manifold-k8s download --context prod --namespaces default,kube-system --resources pods,deployments,services -o ./output
+manifold-k8s export --context prod --namespaces default,kube-system --resources pods,deployments,services -o ./output
 ```
 
 **Export all resources from a namespace:**
 ```bash
-manifold-k8s download --context staging --namespaces myapp --all-resources -o ./backup
+manifold-k8s export --context staging --namespaces myapp --all-resources -o ./backup
 ```
 
 **Dry-run in non-interactive mode:**
 ```bash
-manifold-k8s download --context prod --namespaces default --resources configmaps --dry-run -o ./test
+manifold-k8s export --context prod --namespaces default --resources configmaps --dry-run -o ./test
 ```
 
 **Export from multiple namespaces:**
 ```bash
-manifold-k8s download -c prod -n namespace1,namespace2,namespace3 -r deployments,statefulsets -o ./manifests
+manifold-k8s export -c prod -n namespace1,namespace2,namespace3 -r deployments,statefulsets -o ./manifests
 ```
 
 ## Output Structure
