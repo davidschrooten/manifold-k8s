@@ -226,8 +226,8 @@ github.com/davidschrooten/manifold-k8s/cmd/interactive.go:157.2,157.12 1 0
 github.com/davidschrooten/manifold-k8s/cmd/root.go:27.16,28.42 1 0
 github.com/davidschrooten/manifold-k8s/cmd/root.go:28.42,31.3 2 0
 github.com/davidschrooten/manifold-k8s/cmd/root.go:34.13,41.2 4 1
-github.com/davidschrooten/manifold-k8s/cmd/root.go:43.19,44.19 1 0
+github.com/davidschrooten/manifold-k8s/cmd/root.go:43.19,44.19 1 1
 github.com/davidschrooten/manifold-k8s/cmd/root.go:44.19,46.3 1 0
-github.com/davidschrooten/manifold-k8s/cmd/root.go:46.8,50.3 3 0
-github.com/davidschrooten/manifold-k8s/cmd/root.go:52.2,55.45 3 0
+github.com/davidschrooten/manifold-k8s/cmd/root.go:46.8,50.3 3 1
+github.com/davidschrooten/manifold-k8s/cmd/root.go:52.2,55.45 3 1
 github.com/davidschrooten/manifold-k8s/cmd/root.go:55.45,57.3 1 0
