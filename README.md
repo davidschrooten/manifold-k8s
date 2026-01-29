@@ -188,8 +188,8 @@ The project maintains high test coverage with extensive mocking:
 - `pkg/exporter`: 100% (complete coverage with all error paths tested)
 - `pkg/k8s`: 92.5% (comprehensive resource discovery and filtering)
 - `pkg/selector`: 89.6% (extensive mocking of survey library)
-- `cmd`: 11.7% (cobra command structure tests)
-- **Overall**: 58.7%
+- `cmd`: 16.6% (command structure, flags, and configuration tests)
+- **Overall**: 60.7%
 
 ### Development Workflow
 
