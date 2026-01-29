@@ -216,7 +216,7 @@ func TestExporter_Summary(t *testing.T) {
 				},
 			},
 		}
-		exporter.ExportResource(context.Background(), obj, gvr, "default")
+		_ = exporter.ExportResource(context.Background(), obj, gvr, "default")
 	}
 
 	summary := exporter.Summary()
@@ -362,7 +362,7 @@ func TestWriteManifest_FileWriteError(t *testing.T) {
 	if err := os.Chmod(readOnlyDir, 0555); err != nil { // read + execute only
 		t.Fatal(err)
 	}
-	defer os.Chmod(readOnlyDir, 0755) // cleanup
+	defer func() { _ = os.Chmod(readOnlyDir, 0755) }() // cleanup
 
 	filePath := filepath.Join(readOnlyDir, "test.yaml")
 

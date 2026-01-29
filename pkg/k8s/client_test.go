@@ -60,9 +60,9 @@ users:
 				existingConfig, _ := os.ReadFile(kubeconfigPath)
 				t.Cleanup(func() {
 					if len(existingConfig) > 0 {
-						os.WriteFile(kubeconfigPath, existingConfig, 0600)
+						_ = os.WriteFile(kubeconfigPath, existingConfig, 0600)
 					} else {
-						os.Remove(kubeconfigPath)
+						_ = os.Remove(kubeconfigPath)
 					}
 				})
 				content := `apiVersion: v1

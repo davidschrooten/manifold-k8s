@@ -56,7 +56,7 @@ func TestShouldExcludeResource(t *testing.T) {
 
 func TestDiscoverResources(t *testing.T) {
 	// Create a fake clientset with API resources
-	fakeClient := fake.NewSimpleClientset()
+	fakeClient := fake.NewSimpleClientset() //nolint:staticcheck // Using deprecated API for testing purposes
 	fakeDiscovery := fakeClient.Discovery().(*fakediscovery.FakeDiscovery)
 
 	// Set up fake API resources
@@ -113,13 +113,13 @@ func TestDiscoverResources(t *testing.T) {
 
 func TestGetNamespaces(t *testing.T) {
 	// Create a fake clientset
-	fakeClient := fake.NewSimpleClientset()
+	fakeClient := fake.NewSimpleClientset() //nolint:staticcheck // Using deprecated API for testing purposes
 
 	// Create some namespaces
 	ctx := context.Background()
 	namespaces := []string{"default", "kube-system", "test-ns"}
 	for _, ns := range namespaces {
-		fakeClient.CoreV1().Namespaces().Create(ctx, v1Namespace(ns), metav1.CreateOptions{})
+		_, _ = fakeClient.CoreV1().Namespaces().Create(ctx, v1Namespace(ns), metav1.CreateOptions{})
 	}
 
 	client := &Client{
@@ -297,7 +297,7 @@ func TestSortResourcesByPriority(t *testing.T) {
 }
 
 func TestDiscoverResources_SubresourcesFiltered(t *testing.T) {
-	fakeClient := fake.NewSimpleClientset()
+	fakeClient := fake.NewSimpleClientset() //nolint:staticcheck // Using deprecated API for testing purposes
 	fakeDiscovery := fakeClient.Discovery().(*fakediscovery.FakeDiscovery)
 
 	fakeDiscovery.Resources = []*metav1.APIResourceList{

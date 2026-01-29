@@ -355,11 +355,11 @@ func TestRunExport_NoValidResources(t *testing.T) {
 	err := runExport(exportCmd, []string{})
 
 	// Restore stderr
-	w.Close()
+	_ = w.Close()
 	os.Stderr = old
 
 	var buf bytes.Buffer
-	buf.ReadFrom(r)
+	_, _ = buf.ReadFrom(r)
 	stderr := buf.String()
 
 	// Assert

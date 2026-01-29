@@ -47,9 +47,9 @@ func init() {
 	exportCmd.Flags().StringSliceVarP(&exportResources, "resources", "r", nil, "resource types to export (comma-separated, e.g. pods,deployments)")
 	exportCmd.Flags().BoolVarP(&exportAllRes, "all-resources", "a", false, "export all resource types")
 
-	exportCmd.MarkFlagRequired("context")
-	exportCmd.MarkFlagRequired("namespaces")
-	exportCmd.MarkFlagRequired("output")
+	_ = exportCmd.MarkFlagRequired("context")
+	_ = exportCmd.MarkFlagRequired("namespaces")
+	_ = exportCmd.MarkFlagRequired("output")
 }
 
 func runExport(cmd *cobra.Command, args []string) error {
