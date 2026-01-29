@@ -1,7 +1,9 @@
 # manifold-k8s
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev/)
-[![Test Coverage](https://img.shields.io/badge/coverage-94.0%25-brightgreen)](https://github.com/davidschrooten/manifold-k8s)
+[![Go Report Card](https://goreportcard.com/badge/github.com/davidschrooten/manifold-k8s)](https://goreportcard.com/report/github.com/davidschrooten/manifold-k8s)
+[![Test](https://github.com/davidschrooten/manifold-k8s/actions/workflows/test.yml/badge.svg)](https://github.com/davidschrooten/manifold-k8s/actions/workflows/test.yml)
+[![Test Coverage](https://img.shields.io/badge/coverage-76.7%25-brightgreen)](https://github.com/davidschrooten/manifold-k8s)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A CLI tool that allows you to interactively or programmatically download Kubernetes manifests from one or multiple namespaces.
@@ -17,6 +19,21 @@ A CLI tool that allows you to interactively or programmatically download Kuberne
 - 👁️ **Dry-Run Mode**: Preview what would be downloaded without writing files
 
 ## Installation
+
+### Download Pre-built Binary
+
+Download the latest release for your platform from the [GitHub Releases](https://github.com/davidschrooten/manifold-k8s/releases) page.
+
+Available platforms:
+- Linux (amd64, arm64)
+- macOS (amd64, arm64)
+- Windows (amd64)
+
+After downloading, make the binary executable:
+```bash
+chmod +x manifold-k8s-*
+sudo mv manifold-k8s-* /usr/local/bin/manifold-k8s
+```
 
 ### From Source
 
@@ -188,8 +205,8 @@ The project maintains high test coverage with extensive mocking:
 - `pkg/exporter`: 100% (complete coverage with all error paths tested)
 - `pkg/k8s`: 92.5% (comprehensive resource discovery and filtering)
 - `pkg/selector`: 89.6% (extensive mocking of survey library)
-- `cmd`: 16.6% (command structure, flags, and configuration tests)
-- **Overall**: 60.7%
+- `cmd`: 59.7% (command structure, helpers, flags, and runExport/runInteractive with K8s client fixtures)
+- **Overall**: 76.7%
 
 ### Development Workflow
 
@@ -198,6 +215,23 @@ The project follows Test-Driven Development (TDD) principles:
 2. Implement functionality to make tests pass
 3. Commit changes to feature branches
 4. Merge to master after tests pass
+
+### Releasing
+
+Releases are automated via GitHub Actions. To create a new release:
+
+1. Tag a commit with a version number:
+   ```bash
+   git tag -a v1.0.0 -m "Release v1.0.0"
+   git push origin v1.0.0
+   ```
+
+2. The release workflow will automatically:
+   - Run tests
+   - Build binaries for all supported platforms
+   - Create checksums
+   - Create a GitHub release with all artifacts
+   - Generate release notes
 
 ## Architecture
 
