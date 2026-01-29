@@ -1,7 +1,7 @@
 # manifold-k8s
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev/)
-[![Test Coverage - k8s](https://img.shields.io/badge/coverage%20(k8s)-87.5%25-brightgreen)](https://github.com/davidschrooten/manifold-k8s)
+[![Test Coverage - k8s](https://img.shields.io/badge/coverage%20(k8s)-90.3%25-brightgreen)](https://github.com/davidschrooten/manifold-k8s)
 [![Test Coverage - exporter](https://img.shields.io/badge/coverage%20(exporter)-84.8%25-brightgreen)](https://github.com/davidschrooten/manifold-k8s)
 [![Test Coverage - selector](https://img.shields.io/badge/coverage%20(selector)-32.3%25-yellow)](https://github.com/davidschrooten/manifold-k8s)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
