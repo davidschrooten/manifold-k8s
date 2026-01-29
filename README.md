@@ -50,13 +50,19 @@ This will start an interactive session that guides you through:
 manifold-k8s download [flags]
 
 Flags:
-      --dry-run         Preview what would be downloaded without writing files
-  -o, --output string   Output directory (will be prompted if not provided)
-      --kubeconfig string   Path to kubeconfig file (default is $HOME/.kube/config)
-      --config string       Config file (default is ./config.toml)
+  -a, --all-resources        Export all resource types (non-interactive mode)
+  -c, --context string       Kubernetes context (non-interactive mode)
+      --dry-run              Preview what would be downloaded without writing files
+  -n, --namespaces strings   Namespaces to export (comma-separated, non-interactive mode)
+  -o, --output string        Output directory (will be prompted if not provided)
+  -r, --resources strings    Resource types to export (comma-separated, e.g. pods,deployments)
+      --kubeconfig string    Path to kubeconfig file (default is $HOME/.kube/config)
+      --config string        Config file (default is ./config.toml)
 ```
 
 ### Examples
+
+#### Interactive Mode
 
 **Export from current cluster to a specific directory:**
 ```bash
@@ -71,6 +77,28 @@ manifold-k8s download --dry-run
 **Use a specific kubeconfig:**
 ```bash
 manifold-k8s download --kubeconfig ~/.kube/config-prod
+```
+
+#### Non-Interactive Mode
+
+**Export specific resources from specific namespaces:**
+```bash
+manifold-k8s download --context prod --namespaces default,kube-system --resources pods,deployments,services -o ./output
+```
+
+**Export all resources from a namespace:**
+```bash
+manifold-k8s download --context staging --namespaces myapp --all-resources -o ./backup
+```
+
+**Dry-run in non-interactive mode:**
+```bash
+manifold-k8s download --context prod --namespaces default --resources configmaps --dry-run -o ./test
+```
+
+**Export from multiple namespaces:**
+```bash
+manifold-k8s download -c prod -n namespace1,namespace2,namespace3 -r deployments,statefulsets -o ./manifests
 ```
 
 ## Output Structure
