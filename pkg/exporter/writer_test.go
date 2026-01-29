@@ -228,6 +228,164 @@ func TestExporter_Summary(t *testing.T) {
 	}
 }
 
+func TestWriteManifest_DirectoryError(t *testing.T) {
+	// Use an invalid directory path that cannot be created
+	invalidPath := "/root/nonexistent/test.yaml"
+	
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "v1",
+			"kind":       "Pod",
+			"metadata": map[string]interface{}{
+				"name":      "test-pod",
+				"namespace": "default",
+			},
+		},
+	}
+
+	err := WriteManifest(obj, invalidPath)
+	if err == nil {
+		t.Error("WriteManifest() expected error for invalid path, got nil")
+	}
+}
+
+func TestExportResource_WriteError(t *testing.T) {
+	// Use an invalid output directory
+	exporter := NewExporter("/root/nonexistent")
+
+	gvr := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
+	
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "v1",
+			"kind":       "Pod",
+			"metadata": map[string]interface{}{
+				"name":      "test-pod",
+				"namespace": "default",
+			},
+		},
+	}
+
+	err := exporter.ExportResource(context.Background(), obj, gvr, "default")
+	if err == nil {
+		t.Error("ExportResource() expected error for invalid path, got nil")
+	}
+
+	// Verify counter did not increment on error
+	if exporter.ExportedCount != 0 {
+		t.Errorf("ExportResource() ExportedCount = %d, want 0 after error", exporter.ExportedCount)
+	}
+}
+
+func TestExportResource_EmptyName(t *testing.T) {
+	exporter := NewExporter(t.TempDir())
+
+	gvr := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
+	
+	// Object with no name
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "v1",
+			"kind":       "Pod",
+			"metadata": map[string]interface{}{
+				"namespace": "default",
+			},
+		},
+	}
+
+	err := exporter.ExportResource(context.Background(), obj, gvr, "default")
+	if err == nil {
+		t.Error("ExportResource() expected error for empty name, got nil")
+	}
+	if !contains(err.Error(), "name") {
+		t.Errorf("ExportResource() error should mention name, got: %v", err)
+	}
+}
+
+func TestWriteManifest_WriteFileError(t *testing.T) {
+	// Create a file where we want to create a directory
+	tmpDir := t.TempDir()
+	blockingFile := filepath.Join(tmpDir, "blockingfile")
+	if err := os.WriteFile(blockingFile, []byte("test"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	
+	// Try to write to a path that requires creating a directory where a file exists
+	invalidPath := filepath.Join(blockingFile, "subdir", "test.yaml")
+	
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "v1",
+			"kind":       "Pod",
+			"metadata": map[string]interface{}{
+				"name":      "test-pod",
+				"namespace": "default",
+			},
+		},
+	}
+
+	err := WriteManifest(obj, invalidPath)
+	if err == nil {
+		t.Error("WriteManifest() expected error when directory creation fails, got nil")
+	}
+}
+
+func TestWriteManifest_InvalidYAML(t *testing.T) {
+	tmpDir := t.TempDir()
+	filePath := filepath.Join(tmpDir, "test.yaml")
+	
+	// Create an object with an invalid value that can't be marshaled to YAML
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "v1",
+			"kind":       "Pod",
+			"invalid":    make(chan int), // channels can't be marshaled to YAML
+		},
+	}
+
+	err := WriteManifest(obj, filePath)
+	if err == nil {
+		t.Error("WriteManifest() expected error for invalid YAML, got nil")
+	}
+	if !contains(err.Error(), "marshal") {
+		t.Errorf("WriteManifest() error should mention marshal, got: %v", err)
+	}
+}
+
+func TestWriteManifest_FileWriteError(t *testing.T) {
+	// Create a read-only directory
+	tmpDir := t.TempDir()
+	readOnlyDir := filepath.Join(tmpDir, "readonly")
+	if err := os.MkdirAll(readOnlyDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chmod(readOnlyDir, 0555); err != nil { // read + execute only
+		t.Fatal(err)
+	}
+	defer os.Chmod(readOnlyDir, 0755) // cleanup
+	
+	filePath := filepath.Join(readOnlyDir, "test.yaml")
+	
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "v1",
+			"kind":       "Pod",
+			"metadata": map[string]interface{}{
+				"name":      "test-pod",
+				"namespace": "default",
+			},
+		},
+	}
+
+	err := WriteManifest(obj, filePath)
+	if err == nil {
+		t.Error("WriteManifest() expected error for read-only directory, got nil")
+	}
+	if !contains(err.Error(), "write file") && !contains(err.Error(), "failed to write") {
+		t.Errorf("WriteManifest() error should mention file write, got: %v", err)
+	}
+}
+
 // Helper function
 func contains(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) && 

@@ -296,6 +296,104 @@ func TestSortResourcesByPriority(t *testing.T) {
 	}
 }
 
+func TestDiscoverResources_SubresourcesFiltered(t *testing.T) {
+	fakeClient := fake.NewSimpleClientset()
+	fakeDiscovery := fakeClient.Discovery().(*fakediscovery.FakeDiscovery)
+	
+	fakeDiscovery.Resources = []*metav1.APIResourceList{
+		{
+			GroupVersion: "v1",
+			APIResources: []metav1.APIResource{
+				{Name: "pods", Namespaced: true, Kind: "Pod", Verbs: []string{"list", "get"}},
+				{Name: "pods/status", Namespaced: true, Kind: "Pod", Verbs: []string{"get", "patch"}},
+				{Name: "pods/log", Namespaced: true, Kind: "Pod", Verbs: []string{"get"}},
+			},
+		},
+	}
+
+	resources, err := DiscoverResources(fakeDiscovery)
+	if err != nil {
+		t.Fatalf("DiscoverResources() error = %v", err)
+	}
+
+	// Should only return "pods", not subresources
+	if len(resources) != 1 {
+		t.Errorf("DiscoverResources() returned %d resources, want 1", len(resources))
+	}
+	if resources[0].Name != "pods" {
+		t.Errorf("DiscoverResources() returned %s, want pods", resources[0].Name)
+	}
+}
+
+func TestDiscoverResources_MissingVerbs(t *testing.T) {
+	fakeClient := fake.NewSimpleClientset()
+	fakeDiscovery := fakeClient.Discovery().(*fakediscovery.FakeDiscovery)
+	
+	fakeDiscovery.Resources = []*metav1.APIResourceList{
+		{
+			GroupVersion: "v1",
+			APIResources: []metav1.APIResource{
+				{Name: "pods", Namespaced: true, Kind: "Pod", Verbs: []string{"list", "get"}},
+				{Name: "services", Namespaced: true, Kind: "Service", Verbs: []string{"list"}}, // missing 'get'
+				{Name: "configmaps", Namespaced: true, Kind: "ConfigMap", Verbs: []string{"get"}}, // missing 'list'
+			},
+		},
+	}
+
+	resources, err := DiscoverResources(fakeDiscovery)
+	if err != nil {
+		t.Fatalf("DiscoverResources() error = %v", err)
+	}
+
+	// Should only return "pods" since it has both list and get
+	if len(resources) != 1 {
+		t.Errorf("DiscoverResources() returned %d resources, want 1", len(resources))
+	}
+	if resources[0].Name != "pods" {
+		t.Errorf("DiscoverResources() returned %s, want pods", resources[0].Name)
+	}
+}
+
+func TestSortResourcesByPriority_AllCategories(t *testing.T) {
+	resources := []ResourceInfo{
+		{Name: "zzz-custom", Group: "example.com", Version: "v1"},
+		{Name: "aaa-custom", Group: "mycompany.io", Version: "v1"},
+		{Name: "services", Group: "", Version: "v1"},
+		{Name: "deployments", Group: "apps", Version: "v1"},
+		{Name: "roles", Group: "rbac.authorization.k8s.io", Version: "v1"},
+		{Name: "zzz-standard", Group: "apps", Version: "v1"},
+		{Name: "aaa-standard", Group: "batch", Version: "v1"},
+	}
+
+	sortResourcesByPriority(resources)
+
+	// Priority resource should be first
+	if resources[0].Name != "deployments" {
+		t.Errorf("First should be deployments (priority), got %s", resources[0].Name)
+	}
+	if resources[1].Name != "services" {
+		t.Errorf("Second should be services (priority), got %s", resources[1].Name)
+	}
+
+	// Standard resources (not in priority, not custom) should come next, alphabetically
+	foundStandardSection := false
+	for i := 2; i < len(resources)-2; i++ {
+		if resources[i].Name == "aaa-standard" || resources[i].Name == "roles" || resources[i].Name == "zzz-standard" {
+			foundStandardSection = true
+		}
+	}
+	if !foundStandardSection {
+		t.Error("Standard resources should be in the middle section")
+	}
+
+	// CRDs should be last, alphabetically
+	lastTwo := resources[len(resources)-2:]
+	if lastTwo[0].Name != "aaa-custom" || lastTwo[1].Name != "zzz-custom" {
+		t.Errorf("Last two should be custom resources alphabetically (aaa-custom, zzz-custom), got %s, %s",
+			lastTwo[0].Name, lastTwo[1].Name)
+	}
+}
+
 // Helper function to create namespace object
 func v1Namespace(name string) *v1.Namespace {
 	return &v1.Namespace{
