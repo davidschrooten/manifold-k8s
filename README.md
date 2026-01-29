@@ -3,7 +3,7 @@
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev/)
 [![Go Report Card](https://goreportcard.com/badge/github.com/davidschrooten/manifold-k8s)](https://goreportcard.com/report/github.com/davidschrooten/manifold-k8s)
 [![Test](https://github.com/davidschrooten/manifold-k8s/actions/workflows/test.yml/badge.svg)](https://github.com/davidschrooten/manifold-k8s/actions/workflows/test.yml)
-[![Test Coverage](https://img.shields.io/badge/coverage-76.7%25-brightgreen)](https://github.com/davidschrooten/manifold-k8s)
+[![Test Coverage](https://img.shields.io/badge/coverage-68.0%25-brightgreen)](https://github.com/davidschrooten/manifold-k8s)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A CLI tool that allows you to interactively or programmatically download Kubernetes manifests from one or multiple namespaces.
@@ -12,6 +12,7 @@ A CLI tool that allows you to interactively or programmatically download Kuberne
 
 - 🔍 **Interactive Selection**: Choose clusters, namespaces, and resource types through intuitive prompts
 - 📦 **Comprehensive Resource Support**: Downloads all resource types including Custom Resource Definitions (CRDs)
+- ⎈ **Helm Values Export**: Export Helm release values from one or multiple namespaces
 - 🚫 **Smart Filtering**: Automatically excludes PersistentVolumes and PersistentVolumeClaims
 - 🧹 **Clean Manifests**: Removes runtime fields (status, managedFields, UIDs, etc.) for clean exports
 - 📁 **Organized Output**: Manifests are organized by namespace/resource-type/name.yaml
@@ -53,14 +54,16 @@ go install github.com/davidschrooten/manifold-k8s@latest
 
 ## Usage
 
-manifold-k8s provides two commands:
-- `interactive`: Interactive mode with prompts (best for exploration)
-- `export`: Non-interactive mode with flags (best for scripting/CI-CD)
+manifold-k8s provides several commands:
+- `kubectl-manifests`: Interactive mode for Kubernetes manifests (best for exploration)
+- `kubectl-manifests-export`: Non-interactive mode for Kubernetes manifests (best for scripting/CI-CD)
+- `helm-values`: Interactive mode for Helm release values
+- `helm-values-export`: Non-interactive mode for Helm release values
 
 ### Interactive Mode
 
 ```bash
-manifold-k8s interactive
+manifold-k8s kubectl-manifests
 ```
 
 This will start an interactive session that guides you through:
@@ -72,7 +75,7 @@ This will start an interactive session that guides you through:
 ### Export Mode (Non-Interactive)
 
 ```bash
-manifold-k8s export --context prod --namespaces default --resources pods,deployments -o ./output
+manifold-k8s kubectl-manifests-export --context prod --namespaces default --resources pods,deployments -o ./output
 ```
 
 This requires all parameters via flags (no prompts).
@@ -81,7 +84,7 @@ This requires all parameters via flags (no prompts).
 
 **Interactive Command:**
 ```bash
-manifold-k8s interactive [flags]
+manifold-k8s kubectl-manifests [flags]
 
 Flags:
       --dry-run         Preview what would be downloaded without writing files
@@ -90,7 +93,7 @@ Flags:
 
 **Export Command:**
 ```bash
-manifold-k8s export [flags]
+manifold-k8s kubectl-manifests-export [flags]
 
 Flags:
   -a, --all-resources        Export all resource types
@@ -113,44 +116,82 @@ Flags:
 
 **Basic interactive use:**
 ```bash
-manifold-k8s interactive
+manifold-k8s kubectl-manifests
 ```
 
 **Interactive with pre-specified output directory:**
 ```bash
-manifold-k8s interactive -o ./my-manifests
+manifold-k8s kubectl-manifests -o ./my-manifests
 ```
 
 **Interactive dry-run:**
 ```bash
-manifold-k8s interactive --dry-run
+manifold-k8s kubectl-manifests --dry-run
 ```
 
 **Use a specific kubeconfig:**
 ```bash
-manifold-k8s interactive --kubeconfig ~/.kube/config-prod
+manifold-k8s kubectl-manifests --kubeconfig ~/.kube/config-prod
 ```
 
 #### Export Command (Non-Interactive)
 
 **Export specific resources from specific namespaces:**
 ```bash
-manifold-k8s export --context prod --namespaces default,kube-system --resources pods,deployments,services -o ./output
+manifold-k8s kubectl-manifests-export --context prod --namespaces default,kube-system --resources pods,deployments,services -o ./output
 ```
 
 **Export all resources from a namespace:**
 ```bash
-manifold-k8s export --context staging --namespaces myapp --all-resources -o ./backup
+manifold-k8s kubectl-manifests-export --context staging --namespaces myapp --all-resources -o ./backup
 ```
 
 **Dry-run in non-interactive mode:**
 ```bash
-manifold-k8s export --context prod --namespaces default --resources configmaps --dry-run -o ./test
+manifold-k8s kubectl-manifests-export --context prod --namespaces default --resources configmaps --dry-run -o ./test
 ```
 
 **Export from multiple namespaces:**
 ```bash
-manifold-k8s export -c prod -n namespace1,namespace2,namespace3 -r deployments,statefulsets -o ./manifests
+manifold-k8s kubectl-manifests-export -c prod -n namespace1,namespace2,namespace3 -r deployments,statefulsets -o ./manifests
+```
+
+### Helm Values Export
+
+Export Helm release values from your clusters. Requires `helm` CLI to be installed.
+
+#### Interactive Helm Values Export
+
+**Basic usage:**
+```bash
+manifold-k8s helm-values
+```
+
+This will interactively guide you through:
+1. Selecting cluster context(s)
+2. Selecting namespace(s)
+3. Automatically discovers and exports all Helm releases
+
+**With pre-specified output directory:**
+```bash
+manifold-k8s helm-values -o ./helm-backup
+```
+
+#### Non-Interactive Helm Values Export
+
+**Export all Helm releases from specific namespaces:**
+```bash
+manifold-k8s helm-values-export --context prod --namespaces default,app1 --all -o ./helm-values
+```
+
+**Export specific Helm releases:**
+```bash
+manifold-k8s helm-values-export -c prod -n default -r myapp,nginx -o ./values
+```
+
+**Dry-run:**
+```bash
+manifold-k8s helm-values-export -c staging -n myapp --all --dry-run -o ./test
 ```
 
 ## Output Structure
@@ -201,12 +242,22 @@ make lint
 ### Test Coverage
 
 The project maintains high test coverage with extensive mocking:
-- **Core Packages Average**: 94.0%
-- `pkg/exporter`: 100% (complete coverage with all error paths tested)
-- `pkg/k8s`: 92.5% (comprehensive resource discovery and filtering)
-- `pkg/selector`: 89.6% (extensive mocking of survey library)
-- `cmd`: 59.7% (command structure, helpers, flags, and runExport/runInteractive with K8s client fixtures)
-- **Overall**: 76.7%
+- **Core Packages Average**: 91.7%
+  - `pkg/exporter`: 100.0% (complete coverage with all error paths tested)
+  - `pkg/k8s`: 92.5% (comprehensive resource discovery and filtering)
+  - `pkg/selector`: 89.6% (extensive mocking of survey library)
+  - `pkg/helm`: 84.8% (Helm CLI integration and parsing)
+- **cmd Package**: 51.1%
+  - Core functionality (non-interactive): ~85% coverage
+  - Interactive functions excluded from coverage (require user input)
+  - Includes comprehensive tests for:
+    - Command structure and flags
+    - Kubernetes manifest export logic
+    - Helm values export logic
+    - Error handling paths
+- **Overall**: 68.0%
+
+**Note:** Interactive command functions (`kubectl-manifests` and `helm-values`) are excluded from coverage metrics as they require user prompts and are not easily testable. All non-interactive command paths (`kubectl-manifests-export`, `helm-values-export`) have comprehensive test coverage.
 
 ### Development Workflow
 

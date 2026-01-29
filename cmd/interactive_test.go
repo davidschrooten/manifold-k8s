@@ -14,8 +14,8 @@ func TestInteractiveCmd(t *testing.T) {
 		t.Fatal("interactiveCmd is nil")
 	}
 
-	if interactiveCmd.Use != "interactive" {
-		t.Errorf("interactiveCmd.Use = %s, want interactive", interactiveCmd.Use)
+	if interactiveCmd.Use != "kubectl-manifests" {
+		t.Errorf("interactiveCmd.Use = %s, want kubectl-manifests", interactiveCmd.Use)
 	}
 
 	// Test that command has flags

@@ -71,15 +71,31 @@ func promptContextSelectionWithAsker(asker AskOneFunc, contexts []string, curren
 
 	options := FormatContextOptions(contexts, currentContext)
 
+	// Set default to current context if it exists in the list
+	var defaultOptions []string
+	if currentContext != "" {
+		// Check if current context exists in the list
+		for _, ctx := range contexts {
+			if ctx == currentContext {
+				defaultOptions = []string{fmt.Sprintf("%s (current)", currentContext)}
+				break
+			}
+		}
+	}
+
 	var selected []string
 	prompt := &survey.MultiSelect{
 		Message: "Select cluster context(s):",
 		Options: options,
-		Default: []string{fmt.Sprintf("%s (current)", currentContext)},
+		Default: defaultOptions,
 	}
 
 	if err := asker(prompt, &selected); err != nil {
 		return nil, fmt.Errorf("failed to select contexts: %w", err)
+	}
+
+	if len(selected) == 0 {
+		return nil, errors.New("no contexts selected")
 	}
 
 	// Parse selected contexts
