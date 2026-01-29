@@ -85,7 +85,8 @@ func (m *mockNamespaceableResource) List(ctx context.Context, opts metav1.ListOp
 	// Return mock data based on resource type
 	items := []unstructured.Unstructured{}
 
-	if m.gvr.Resource == "pods" {
+	switch m.gvr.Resource {
+	case "pods":
 		items = append(items, unstructured.Unstructured{
 			Object: map[string]interface{}{
 				"apiVersion": "v1",
@@ -96,7 +97,7 @@ func (m *mockNamespaceableResource) List(ctx context.Context, opts metav1.ListOp
 				},
 			},
 		})
-	} else if m.gvr.Resource == "deployments" {
+	case "deployments":
 		items = append(items, unstructured.Unstructured{
 			Object: map[string]interface{}{
 				"apiVersion": "apps/v1",

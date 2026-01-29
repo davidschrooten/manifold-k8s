@@ -94,8 +94,8 @@ func TestRunExportWithMocks(t *testing.T) {
 
 	// Create mock kubeconfig
 	kubeconfigPath := createMockKubeconfig(t)
-	os.Setenv("KUBECONFIG", kubeconfigPath)
-	defer os.Unsetenv("KUBECONFIG")
+	_ = os.Setenv("KUBECONFIG", kubeconfigPath)
+	defer func() { _ = os.Unsetenv("KUBECONFIG") }()
 
 	// Test that we can call the command structure
 	cmd := mockExportCmd(t)
@@ -123,8 +123,8 @@ func TestRunInteractiveWithMocks(t *testing.T) {
 
 	// Create mock kubeconfig
 	kubeconfigPath := createMockKubeconfig(t)
-	os.Setenv("KUBECONFIG", kubeconfigPath)
-	defer os.Unsetenv("KUBECONFIG")
+	_ = os.Setenv("KUBECONFIG", kubeconfigPath)
+	defer func() { _ = os.Unsetenv("KUBECONFIG") }()
 
 	// Test command structure (actual execution would require prompts)
 	if interactiveCmd == nil {

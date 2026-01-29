@@ -37,7 +37,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./config.toml)")
 	rootCmd.PersistentFlags().String("kubeconfig", "", "path to kubeconfig file (default is $HOME/.kube/config)")
 
-	viper.BindPFlag("kubeconfig", rootCmd.PersistentFlags().Lookup("kubeconfig"))
+	_ = viper.BindPFlag("kubeconfig", rootCmd.PersistentFlags().Lookup("kubeconfig"))
 }
 
 func initConfig() {
