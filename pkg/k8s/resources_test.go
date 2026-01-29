@@ -326,7 +326,7 @@ func TestDiscoverResources_SubresourcesFiltered(t *testing.T) {
 }
 
 func TestDiscoverResources_MissingVerbs(t *testing.T) {
-	fakeClient := fake.NewSimpleClientset()
+	fakeClient := fake.NewSimpleClientset() //nolint:staticcheck // Using deprecated API for testing purposes
 	fakeDiscovery := fakeClient.Discovery().(*fakediscovery.FakeDiscovery)
 
 	fakeDiscovery.Resources = []*metav1.APIResourceList{
